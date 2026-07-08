@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Produits — Pilotage PDV{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Produits</h1>
+    <p class="subtitle">Catalogue des produits vendus</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr>
+          <th scope="col">Produit</th>
+          <th scope="col">Catégorie</th>
+          <th scope="col">Prix unitaire</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in produits %}
+        <tr>
+          <td class="col-strong">{{ p.nom }}</td>
+          <td>{{ p.categorie or '—' }}</td>
+          <td>{{ p.prix_unitaire | euros }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3">Aucun produit enregistré.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

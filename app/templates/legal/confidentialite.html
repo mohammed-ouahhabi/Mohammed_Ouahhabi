@@ -1,0 +1,35 @@
+{% extends "legal/base_legal.html" %}
+{% block title %}Confidentialité & cookies — Pilotage PDV{% endblock %}
+{% block legal %}
+<h1>Politique de confidentialité &amp; cookies</h1>
+
+<h2>Données personnelles collectées</h2>
+<p>
+  L'application traite les données de compte des utilisateurs : nom, adresse e-mail,
+  rôle et statut. Le mot de passe n'est jamais stocké en clair (il est haché).
+</p>
+
+<h2>Finalité</h2>
+<p>
+  Ces données servent uniquement à l'authentification et à la gestion des droits
+  d'accès. Aucune donnée n'est cédée à des tiers.
+</p>
+
+<h2>Vos droits (RGPD)</h2>
+<ul>
+  <li><strong>Accès et rectification</strong> : depuis la page « Mon compte », vous
+    pouvez consulter et modifier vos informations.</li>
+  <li><strong>Effacement</strong> : depuis « Mon compte », vous pouvez supprimer
+    définitivement votre compte.</li>
+  <li>Pour toute autre demande, contactez l'administrateur du point de vente.</li>
+</ul>
+
+<h2>Cookies</h2>
+<p>
+  L'application dépose un unique cookie de session, strictement nécessaire au
+  fonctionnement de la connexion (Flask-Login). Il est <em>HttpOnly</em> et, en
+  production, transmis uniquement en HTTPS (<em>Secure</em>). Aucun cookie
+  publicitaire ou de mesure d'audience n'est utilisé. Le bandeau d'information
+  n'apparaît qu'une fois ; votre choix est mémorisé localement dans votre navigateur.
+</p>
+{% endblock %}

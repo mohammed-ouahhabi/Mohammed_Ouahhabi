@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% from "partials/icons.html" import icone %}
+{% block title %}Administration — Pilotage PDV{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Administration</h1>
+    <p class="subtitle">Utilisateurs &amp; sources de données</p>
+  </div>
+</div>
+
+{# --- Utilisateurs --- #}
+<div class="card">
+  <div class="card__title card__title--row">
+    <h2 class="card__title" style="margin:0">Utilisateurs</h2>
+    <a class="btn btn--primary btn--sm" href="{{ url_for('admin.creer_utilisateur') }}">
+      {{ icone('plus', 16) }} Ajouter un utilisateur
+    </a>
+  </div>
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr>
+          <th scope="col">Nom</th>
+          <th scope="col">Rôle</th>
+          <th scope="col">Statut</th>
+          <th scope="col"><span class="visually-hidden">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in utilisateurs %}
+        <tr>
+          <td>
+            <span class="user-row">
+              <span class="avatar">{{ u.nom[:1] | upper }}</span>
+              <span class="col-strong">{{ u.nom }}</span>
+            </span>
+          </td>
+          <td>{{ u.role_label }}</td>
+          <td>
+            {% if u.actif %}
+              <span class="badge badge--green">Actif</span>
+            {% else %}
+              <span class="badge badge--grey">Désactivé</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="actions-cell">
+              <a class="icon-btn" href="{{ url_for('admin.editer_utilisateur', id_utilisateur=u.id_utilisateur) }}"
+                 aria-label="Modifier {{ u.nom }}" title="Modifier">{{ icone('edit', 16) }}</a>
+              <form method="post" style="display:inline"
+                    action="{{ url_for('admin.supprimer_utilisateur', id_utilisateur=u.id_utilisateur) }}"
+                    onsubmit="return confirm('Supprimer définitivement {{ u.nom }} ?');">
+                {{ suppression_form.hidden_tag() }}
+                <button class="icon-btn icon-btn--danger" type="submit"
+                        aria-label="Supprimer {{ u.nom }}" title="Supprimer">{{ icone('trash', 16) }}</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{# --- Sources de données --- #}
+<div class="card">
+  <h2 class="card__title">Sources de données</h2>
+  {% for s in sources %}
+  <div class="source-row">
+    <span class="source-icon">{{ icone('database', 18) }}</span>
+    <div>
+      <div class="source-row__name">{{ s.nom }}</div>
+      <div class="source-row__type">{{ s.type }}</div>
+    </div>
+    <span class="badge badge--green">À jour</span>
+    <div class="source-row__meta">
+      {% if s.dernier_import %}
+        Dernier import : {{ s.dernier_import.date_import.strftime('%d/%m/%Y à %H:%M') }}
+      {% else %}
+        Aucun import
+      {% endif %}
+    </div>
+    <a class="btn btn--ghost btn--sm" href="{{ url_for('imports.index') }}">
+      {{ icone('refresh', 15) }} Rafraîchir
+    </a>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

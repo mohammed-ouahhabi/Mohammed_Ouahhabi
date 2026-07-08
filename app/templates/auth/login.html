@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% from "partials/icons.html" import icone %}
+{% block title %}Connexion — Pilotage PDV{% endblock %}
+
+{% block layout %}
+<div class="login">
+  <aside class="login__aside">
+    <span class="brand">
+      <span class="brand__logo">{{ icone('grid', 18) }}</span>
+      <span>{{ nom_app }}</span>
+    </span>
+    <h1 class="login__title">Pilotez la performance de votre point de vente.</h1>
+    <p class="login__subtitle">Vos indicateurs clés, consolidés et fiabilisés, au même endroit.</p>
+    <p class="login__aside-footer">Nexa Digital School — Projet de fin d'études</p>
+  </aside>
+
+  <main class="login__main" id="contenu-principal">
+    <div class="login__form">
+      <h2>Connexion</h2>
+      <p class="subtitle">Accédez à votre tableau de bord.</p>
+
+      {% include "partials/flash.html" %}
+
+      <form method="post" novalidate>
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+          {{ form.email.label }}
+          {{ form.email(placeholder="responsable@pdv-nanterre.fr", autocomplete="email") }}
+          {% for e in form.email.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+        </div>
+        <div class="form-group">
+          {{ form.mot_de_passe.label }}
+          {{ form.mot_de_passe(placeholder="••••••••••", autocomplete="current-password") }}
+          {% for e in form.mot_de_passe.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+        </div>
+        <div class="form-group checkbox">
+          {{ form.se_souvenir() }} {{ form.se_souvenir.label }}
+        </div>
+        {{ form.submit(class="btn btn--primary btn--block") }}
+      </form>
+
+      <p class="login__links"><a href="{{ url_for('legal.confidentialite') }}">Mot de passe oublié ?</a></p>
+    </div>
+  </main>
+</div>
+{% endblock %}

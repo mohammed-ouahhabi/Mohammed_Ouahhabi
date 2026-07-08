@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# Flask / base de données locale
+instance/
+*.db
+*.sqlite
+*.sqlite3
+
+# Environnement
+.env
+
+# Uploads temporaires du pipeline
+app/static/uploads/*
+!app/static/uploads/.gitkeep
+
+# OS / éditeurs
+.DS_Store
+.idea/
+.vscode/

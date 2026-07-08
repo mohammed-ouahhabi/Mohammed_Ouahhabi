@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% from "partials/icons.html" import icone %}
+{% block title %}Analyse des ventes — Pilotage PDV{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Analyse des ventes</h1>
+    <p class="subtitle">Point de vente : {{ point_de_vente.nom if point_de_vente else '—' }}</p>
+  </div>
+</div>
+
+{# --- Filtres (mois / produit / catégorie) + export --- #}
+<form class="filters" method="get" action="{{ url_for('ventes.index') }}">
+  <label class="visually-hidden" for="mois">Mois</label>
+  <input type="month" id="mois" name="mois" value="{{ mois_selectionne }}"
+         onchange="this.form.submit()" style="width:auto;min-width:160px">
+
+  <label class="visually-hidden" for="produit_id">Produit</label>
+  <select id="produit_id" name="produit_id" onchange="this.form.submit()">
+    <option value="">Tous les produits</option>
+    {% for p in produits %}
+    <option value="{{ p.id_produit }}" {{ 'selected' if produit_selectionne == p.id_produit }}>{{ p.nom }}</option>
+    {% endfor %}
+  </select>
+
+  <label class="visually-hidden" for="categorie">Catégorie</label>
+  <select id="categorie" name="categorie" onchange="this.form.submit()">
+    <option value="">Toutes catégories</option>
+    {% for c in categories %}
+    <option value="{{ c }}" {{ 'selected' if categorie_selectionnee == c }}>{{ c }}</option>
+    {% endfor %}
+  </select>
+
+  <a class="btn btn--ghost" href="{{ url_for('ventes.export', mois=mois_selectionne) }}">
+    {{ icone('download', 16) }} Exporter
+  </a>
+</form>
+
+{# --- Graphique ventes par période --- #}
+<div class="card">
+  <h2 class="card__title">Ventes par période</h2>
+  <div class="chart-box chart-box--tall">
+    <canvas id="chart-ventes" role="img" aria-label="Graphique des ventes par période"></canvas>
+  </div>
+</div>
+
+{# --- Tableau détaillé par produit --- #}
+<div class="card">
+  <h2 class="card__title">Détail par produit</h2>
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr>
+          <th scope="col">Produit</th>
+          <th scope="col">Quantité</th>
+          <th scope="col">Chiffre d'affaires</th>
+          <th scope="col">Part</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in detail %}
+        <tr>
+          <td class="col-strong">{{ r.nom }}</td>
+          <td>{{ r.quantite | nombre }}</td>
+          <td>{{ r.ca | euros }}</td>
+          <td>{{ r.part }} %</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4">Aucune vente sur la période sélectionnée.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script id="data-ventes" type="application/json">{{ graphe | tojson }}</script>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  var el = document.getElementById("data-ventes");
+  var d = { labels: [], valeurs: [] };
+  try { d = JSON.parse(el.textContent); } catch (e) {}
+  var c = document.getElementById("chart-ventes");
+  if (c && window.Chart) {
+    var max = Math.max.apply(null, d.valeurs.length ? d.valeurs : [0]);
+    var couleurs = d.valeurs.map(function (v) { return v >= max && max > 0 ? "#0f8b6c" : "#bfd8cf"; });
+    new Chart(c, {
+      type: "bar",
+      data: { labels: d.labels, datasets: [{ data: d.valeurs, backgroundColor: couleurs, borderRadius: 6 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: "#64748b", maxTicksLimit: 12 } },
+          y: { grid: { color: "#eef2f7" }, ticks: { color: "#64748b" }, beginAtZero: true }
+        }
+      }
+    });
+  }
+})();
+</script>
+{% endblock %}

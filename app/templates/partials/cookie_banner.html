@@ -1,0 +1,14 @@
+{# Bandeau cookies RGPD. Le choix est mémorisé côté navigateur (localStorage) ;
+   l'application ne dépose aucun cookie de suivi (seul le cookie de session est
+   strictement nécessaire), le bandeau est donc purement informatif et de consentement. #}
+<div class="cookie-banner" id="cookie-banner" role="dialog" aria-live="polite"
+     aria-label="Information sur les cookies" hidden>
+  <p>
+    Ce site utilise uniquement un cookie de session strictement nécessaire à votre
+    connexion. Aucun traceur publicitaire n'est déposé.
+    <a href="{{ url_for('legal.confidentialite') }}">En savoir plus</a>.
+  </p>
+  <div class="cookie-banner__actions">
+    <button class="btn btn--green btn--sm" type="button" data-cookie-accept>J'ai compris</button>
+  </div>
+</div>

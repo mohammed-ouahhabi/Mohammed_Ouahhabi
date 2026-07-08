@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Nouvel utilisateur' if mode == 'creer' else 'Modifier un utilisateur' }} — Pilotage PDV{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>{{ 'Ajouter un utilisateur' if mode == 'creer' else 'Modifier ' + utilisateur.nom }}</h1>
+    <p class="subtitle">Gestion des comptes du point de vente</p>
+  </div>
+</div>
+
+<div class="card" style="max-width:560px">
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="form-group">
+      {{ form.nom.label }} {{ form.nom() }}
+      {% for e in form.nom.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+    </div>
+    <div class="form-group">
+      {{ form.email.label }} {{ form.email(autocomplete="off") }}
+      {% for e in form.email.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+    </div>
+    <div class="form-group">
+      {{ form.role.label }} {{ form.role() }}
+      {% for e in form.role.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+    </div>
+    <div class="form-group">
+      {{ form.mot_de_passe.label }}
+      {{ form.mot_de_passe(autocomplete="new-password",
+          placeholder="8 caractères min." if mode == 'creer' else "Laisser vide pour ne pas changer") }}
+      {% for e in form.mot_de_passe.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+    </div>
+    <div class="form-group checkbox">
+      {{ form.actif() }} {{ form.actif.label }}
+    </div>
+    <div style="display:flex; gap:10px; margin-top:8px">
+      {{ form.submit(class="btn btn--primary") }}
+      <a class="btn btn--ghost" href="{{ url_for('admin.index') }}">Annuler</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

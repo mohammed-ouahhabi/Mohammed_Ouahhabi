@@ -1,0 +1,7 @@
+{% extends "legal/base_legal.html" %}
+{% block title %}Accès refusé — Pilotage PDV{% endblock %}
+{% block legal %}
+<h1>Accès refusé</h1>
+<p>Votre rôle ne vous permet pas d'accéder à cette page.</p>
+<p><a href="{{ url_for('dashboard.index') }}">Retour au tableau de bord</a></p>
+{% endblock %}

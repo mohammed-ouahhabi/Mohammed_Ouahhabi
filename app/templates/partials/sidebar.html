@@ -1,0 +1,55 @@
+{% from "partials/icons.html" import icone %}
+<aside class="sidebar">
+  <a class="brand" href="{{ url_for('dashboard.index') }}">
+    <span class="brand__logo">{{ icone('grid', 18) }}</span>
+    <span>{{ nom_app }}</span>
+  </a>
+
+  <nav aria-label="Navigation principale">
+    <p class="nav-section">Pilotage</p>
+    <a class="nav-link {{ 'active' if request.endpoint == 'dashboard.index' }}"
+       href="{{ url_for('dashboard.index') }}"
+       {{ 'aria-current=page' if request.endpoint == 'dashboard.index' }}>
+      {{ icone('grid') }}<span>Tableau de bord</span>
+    </a>
+    {% if current_user.peut_analyser %}
+    <a class="nav-link {{ 'active' if request.endpoint == 'ventes.index' }}"
+       href="{{ url_for('ventes.index') }}"
+       {{ 'aria-current=page' if request.endpoint == 'ventes.index' }}>
+      {{ icone('chart') }}<span>Ventes</span>
+    </a>
+    {% endif %}
+    <a class="nav-link {{ 'active' if request.endpoint == 'ventes.catalogue' }}"
+       href="{{ url_for('ventes.catalogue') }}"
+       {{ 'aria-current=page' if request.endpoint == 'ventes.catalogue' }}>
+      {{ icone('box') }}<span>Produits</span>
+    </a>
+
+    {% if current_user.peut_administrer %}
+    <p class="nav-section">Administration</p>
+    <a class="nav-link {{ 'active' if request.blueprint == 'admin' }}"
+       href="{{ url_for('admin.index') }}"
+       {{ 'aria-current=page' if request.blueprint == 'admin' }}>
+      {{ icone('users') }}<span>Utilisateurs &amp; sources</span>
+    </a>
+    <a class="nav-link {{ 'active' if request.blueprint == 'imports' }}"
+       href="{{ url_for('imports.index') }}"
+       {{ 'aria-current=page' if request.blueprint == 'imports' }}>
+      {{ icone('upload') }}<span>Import de données</span>
+    </a>
+    {% endif %}
+  </nav>
+
+  <div class="sidebar__spacer"></div>
+
+  <div class="sidebar__user">
+    <a href="{{ url_for('auth.mon_compte') }}" class="avatar" title="Mon compte"
+       aria-label="Mon compte">{{ current_user.nom[:1] | upper }}</a>
+    <div class="sidebar__user-info">
+      <div class="sidebar__user-name">{{ current_user.nom }}</div>
+      <div class="sidebar__user-role">{{ current_user.role_label }}</div>
+    </div>
+    <a class="sidebar__logout" href="{{ url_for('auth.logout') }}"
+       aria-label="Se déconnecter" title="Se déconnecter">{{ icone('logout', 18) }}</a>
+  </div>
+</aside>

@@ -1,0 +1,37 @@
+# Déploiement sur Render (https://render.com) — infrastructure décrite en code.
+# Crée automatiquement : 1 base PostgreSQL managée + 1 service web Flask.
+#
+# À la création, Render :
+#   1. installe les dépendances (buildCommand) ;
+#   2. applique les migrations puis charge les données de démo (preDeployCommand) ;
+#   3. lance l'application avec gunicorn (startCommand).
+#
+# La variable DATABASE_URL est injectée automatiquement depuis la base ci-dessous,
+# ce qui bascule l'application de SQLite (dev) à PostgreSQL (prod) sans toucher au code.
+
+databases:
+  - name: pilotage-pdv-db
+    databaseName: pilotage
+    plan: free
+
+services:
+  - type: web
+    name: pilotage-pdv
+    runtime: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    preDeployCommand: "flask db upgrade"
+    startCommand: "gunicorn wsgi:app"
+    envVars:
+      - key: FLASK_APP
+        value: wsgi.py
+      - key: FLASK_CONFIG
+        value: production
+      - key: SECRET_KEY
+        generateValue: true          # Render génère une clé secrète forte
+      - key: DATABASE_URL
+        fromDatabase:
+          name: pilotage-pdv-db
+          property: connectionString
+      - key: PYTHON_VERSION
+        value: "3.11.9"

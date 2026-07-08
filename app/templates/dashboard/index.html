@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Tableau de bord — Pilotage PDV{% endblock %}
+
+{% macro trend(variation) %}
+  {% if variation is none %}
+    <div class="kpi__trend kpi__trend--flat">— stable</div>
+  {% elif variation > 0 %}
+    <div class="kpi__trend kpi__trend--up">▲ +{{ variation }} % vs période préc.</div>
+  {% elif variation < 0 %}
+    <div class="kpi__trend kpi__trend--down">▼ {{ variation }} % vs période préc.</div>
+  {% else %}
+    <div class="kpi__trend kpi__trend--flat">— stable</div>
+  {% endif %}
+{% endmacro %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Tableau de bord</h1>
+    <p class="subtitle">Point de vente : {{ point_de_vente.nom if point_de_vente else '—' }}</p>
+  </div>
+  <div class="page-header__actions">
+    <span class="badge badge--grey">{{ resume.periode.jours }} derniers jours</span>
+  </div>
+</div>
+
+{# --- KPI --- #}
+<div class="card">
+  <div class="kpi__label">Chiffre d'affaires</div>
+  <div class="kpi__value">{{ resume.ca | euros }}</div>
+  {{ trend(resume.ca_variation) }}
+</div>
+<div class="card">
+  <div class="kpi__label">Commandes</div>
+  <div class="kpi__value">{{ resume.commandes | nombre }}</div>
+  {{ trend(resume.commandes_variation) }}
+</div>
+<div class="card">
+  <div class="kpi__label">Panier moyen</div>
+  <div class="kpi__value">{{ resume.panier_moyen | euros }}</div>
+  {{ trend(resume.panier_moyen_variation) }}
+</div>
+<div class="card">
+  <div class="kpi__label">Produits vendus</div>
+  <div class="kpi__value">{{ resume.produits_vendus | nombre }}</div>
+  {{ trend(resume.produits_vendus_variation) }}
+</div>
+
+{# --- Évolution du CA --- #}
+<div class="card">
+  <h2 class="card__title">Évolution du chiffre d'affaires</h2>
+  <div class="chart-box">
+    <canvas id="chart-evolution" aria-label="Graphique de l'évolution du chiffre d'affaires"
+            role="img"></canvas>
+  </div>
+</div>
+
+{# --- Top produits --- #}
+<div class="card">
+  <h2 class="card__title">Top produits</h2>
+  {% set qmax = (resume.top_produits | map(attribute='quantite') | max) if resume.top_produits else 1 %}
+  {% for p in resume.top_produits %}
+  <div class="top-produit">
+    <div class="top-produit__head">
+      <span class="top-produit__name">{{ p.nom }}</span>
+      <span class="top-produit__value">{{ p.quantite | nombre }}</span>
+    </div>
+    <div class="bar-track">
+      <div class="bar-fill" style="width: {{ ((p.quantite / qmax) * 100) | round if qmax else 0 }}%"></div>
+    </div>
+  </div>
+  {% else %}
+  <p class="subtitle">Aucune donnée sur la période.</p>
+  {% endfor %}
+</div>
+
+{# --- Pics d'activité --- #}
+<div class="card">
+  <div class="card__title card__title--row">
+    <h2 class="card__title" style="margin:0">Pics d'activité (par heure)</h2>
+    <span class="card__hint">11h → 22h</span>
+  </div>
+  <div class="chart-box">
+    <canvas id="chart-pics" aria-label="Graphique des pics d'activité par heure"
+            role="img"></canvas>
+  </div>
+</div>
+
+{# Données injectées pour Chart.js (échappées en JSON par tojson) #}
+<script id="data-evolution" type="application/json">{{ resume.evolution_ca | tojson }}</script>
+<script id="data-pics" type="application/json">{{ resume.pics_activite | tojson }}</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

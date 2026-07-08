@@ -1,0 +1,7 @@
+{% extends "legal/base_legal.html" %}
+{% block title %}Fichier trop volumineux — Pilotage PDV{% endblock %}
+{% block legal %}
+<h1>Fichier trop volumineux</h1>
+<p>Le fichier dépasse la taille maximale autorisée (10 Mo). Réduisez-le puis réessayez.</p>
+<p><a href="{{ url_for('imports.index') }}">Retour à l'import</a></p>
+{% endblock %}

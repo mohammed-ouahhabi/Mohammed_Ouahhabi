@@ -1,0 +1,10 @@
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-zone" role="status" aria-live="polite">
+      {% for categorie, message in messages %}
+        {% set classe = {'success':'success','error':'error','warning':'warning'}.get(categorie, 'warning') %}
+        <div class="flash flash--{{ classe }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}

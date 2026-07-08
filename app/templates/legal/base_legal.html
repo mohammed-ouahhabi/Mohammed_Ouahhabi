@@ -1,0 +1,19 @@
+{# Gabarit simple pour les pages légales : accessible avec ou sans connexion. #}
+{% extends "base.html" %}
+
+{% block layout %}
+<div class="app">
+  {% if current_user.is_authenticated %}
+    {% include "partials/sidebar.html" %}
+  {% endif %}
+  <main class="content" id="contenu-principal">
+    {% if not current_user.is_authenticated %}
+      <p style="margin-bottom:20px"><a href="{{ url_for('auth.login') }}">← Retour à la connexion</a></p>
+    {% endif %}
+    <div class="card prose">
+      {% block legal %}{% endblock %}
+    </div>
+    {% include "partials/legal_footer.html" %}
+  </main>
+</div>
+{% endblock %}

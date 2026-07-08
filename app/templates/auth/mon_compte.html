@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Mon compte — Pilotage PDV{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Mon compte</h1>
+    <p class="subtitle">Modifier mes informations (droit de rectification — RGPD)</p>
+  </div>
+</div>
+
+<div class="card" style="max-width:560px">
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="form-group">
+      {{ form.nom.label }} {{ form.nom() }}
+      {% for e in form.nom.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+    </div>
+    <div class="form-group">
+      {{ form.email.label }} {{ form.email(autocomplete="email") }}
+      {% for e in form.email.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+    </div>
+    <div class="form-group">
+      {{ form.mot_de_passe.label }} {{ form.mot_de_passe(autocomplete="new-password") }}
+      {% for e in form.mot_de_passe.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+    </div>
+    <div class="form-group">
+      {{ form.confirmation.label }} {{ form.confirmation(autocomplete="new-password") }}
+      {% for e in form.confirmation.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+    </div>
+    {{ form.submit(class="btn btn--primary") }}
+  </form>
+</div>
+
+{# --- Suppression du compte (droit à l'effacement — RGPD) --- #}
+<div class="card" style="max-width:560px">
+  <h2 class="card__title">Supprimer mon compte</h2>
+  <p class="subtitle" style="margin-bottom:14px">
+    Cette action est définitive : toutes vos informations de compte seront effacées.
+  </p>
+  <form method="post" action="{{ url_for('auth.supprimer_mon_compte') }}"
+        onsubmit="return confirm('Supprimer définitivement votre compte ? Cette action est irréversible.');">
+    {{ suppression_form.hidden_tag() }}
+    <button class="btn btn--danger" type="submit">Supprimer mon compte</button>
+  </form>
+</div>
+{% endblock %}
