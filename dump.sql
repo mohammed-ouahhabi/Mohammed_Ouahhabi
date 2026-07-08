@@ -10041,11 +10041,11 @@ CREATE TABLE utilisateur (
 	PRIMARY KEY (id_utilisateur), 
 	FOREIGN KEY(point_de_vente_id) REFERENCES point_de_vente (id_point_de_vente)
 );
-INSERT INTO "utilisateur" VALUES(1,1,'Ahmed O.','manager@pdv-nanterre.fr','manager',1,'scrypt:32768:8:1$5FJHvxHAlrpS4lUQ$d91748a6c58d52667745ddfcf6d3434b5ffeaec87a43b2033d9aaa4cd8f29a1b8cba20914de7a1a38887321dfb15b38acaf584986e07ad215c75964de8673f25');
-INSERT INTO "utilisateur" VALUES(2,1,'Responsable Nanterre','responsable@pdv-nanterre.fr','manager',1,'scrypt:32768:8:1$WXEpsjQThDrM5Gvd$b32a0e2e02fb3d007147b60ff7a6be7370e8b6ef4714dc6661c9aa91cdba7f06caaa9dc2f17593e2095eeee8a3e10604862bd10c67b7696bab2bf9580865b4d9');
-INSERT INTO "utilisateur" VALUES(3,1,'Adjoint Nanterre','adjoint@pdv-nanterre.fr','assistant',1,'scrypt:32768:8:1$ZGH2u5y7akPZrOmB$e7caaac5db5aa4a818b94e28c69a47a032fb40259371a7c49b974a2826db4534280f2a0c178426e3b0c7a915814715bc57fa1f8d300872005e6c0bf00951ec13');
-INSERT INTO "utilisateur" VALUES(4,1,'Premier équipier','premier@pdv-nanterre.fr','premier_equipier',1,'scrypt:32768:8:1$tjes7KnNQuREw4of$4683b79e7f252a82877be06fa54a9697d11804449cd4bb3703194883897a78849a13778b1d6fe7c9dde3af9f3e96d977ff5bcab696d336fdfdd395446d722e90');
-INSERT INTO "utilisateur" VALUES(5,1,'Équipier','equipier@pdv-nanterre.fr','equipier',1,'scrypt:32768:8:1$qSPtkVK68dsiapiX$3bd926ecf5672bd69524f651eacdcd6e97ca97787d2d24ebdccdc8e25fb98008857b80a6291c49da3043c6ccd2183f897011f60bd2a7fa9335bc590b8e064535');
+INSERT INTO "utilisateur" VALUES(1,1,'Ahmed O.','manager@pdv-nanterre.fr','manager',1,'scrypt:32768:8:1$uIWpjDhUZo6waS0h$ece8ab36dce8305bb69b475e60f1c703fac5231609929f0f38bc923fe58360482dccec584ef8650d4466be792827928b2c9ed2910f705d8224c989938db9a30a');
+INSERT INTO "utilisateur" VALUES(2,1,'Responsable Nanterre','responsable@pdv-nanterre.fr','manager',1,'scrypt:32768:8:1$JvOlvw9PEskCc1rI$7a036a89d14b5bda7cbd0e86c32392d17bbe5e2c12c3ba740efb34e83fd446908f268a118bf93eec3122d2a2b24bd3db4af23b54283fef5663c7c79ff8cac4b9');
+INSERT INTO "utilisateur" VALUES(3,1,'Adjoint Nanterre','adjoint@pdv-nanterre.fr','assistant',1,'scrypt:32768:8:1$xsHdMkfxSEDIalYZ$5f3b4740b5bddf649a2167409e90bed0773d5d253d2fb4ce811a6ae800c0eb6d7838776d806a903d35b92259c32afa090222c30931fd3ce6a6bf9a081296c3c6');
+INSERT INTO "utilisateur" VALUES(4,1,'Premier équipier','premier@pdv-nanterre.fr','premier_equipier',1,'scrypt:32768:8:1$CdkDjfgY6UTKyMcW$e3df4837a21fd2961fcd9cf64aba343beee18ed50381161fa3cc2eb1a67c21e084045a46da330cf8ba0061b532fbd869c317d8c1ca9a84150bb98bd80c81a4fe');
+INSERT INTO "utilisateur" VALUES(5,1,'Équipier','equipier@pdv-nanterre.fr','equipier',1,'scrypt:32768:8:1$kcnB1qup4rgcDgJS$784de592ec9fc45f384d903742f46914ee69b58c199961425bc2eabee4beff5ddd87896cefe2cfb6bab92b33b4b87426239a53dd5157e828cf6f912909ee5206');
 CREATE INDEX ix_commande_date_heure ON commande (date_heure);
 CREATE UNIQUE INDEX ix_utilisateur_email ON utilisateur (email);
 COMMIT;

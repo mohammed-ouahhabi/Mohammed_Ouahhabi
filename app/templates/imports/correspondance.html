@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% from "partials/icons.html" import icone %}
+{% block title %}Correspondance des colonnes — Pilotage PDV{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Import de données</h1>
+    <p class="subtitle">Étape 2 — Correspondance des colonnes</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="flash flash--success" style="margin-bottom:16px">
+    Fichier reçu : <strong>{{ nom_fichier }}</strong> — {{ info.colonnes | length }} colonnes détectées.
+    Vérifiez la correspondance ci-dessous : les champs reconnus sont pré-remplis
+    automatiquement.
+  </div>
+
+  {# Aperçu des premières lignes pour aider à associer les colonnes #}
+  {% if info.apercu %}
+  <h2 class="card__title">Aperçu du fichier</h2>
+  <div class="table-wrap" style="margin-bottom:20px">
+    <table class="data">
+      <thead>
+        <tr>{% for c in info.colonnes %}<th scope="col">{{ c }}</th>{% endfor %}</tr>
+      </thead>
+      <tbody>
+        {% for ligne in info.apercu %}
+        <tr>{% for c in info.colonnes %}<td>{{ ligne[c] }}</td>{% endfor %}</tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  {# Formulaire de correspondance : un champ cible -> une colonne du fichier #}
+  <h2 class="card__title">Associer les colonnes</h2>
+  <form method="post" action="{{ url_for('imports.traiter') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="jeton" value="{{ jeton }}">
+    <input type="hidden" name="nom_fichier" value="{{ nom_fichier }}">
+
+    {% for champ in champs %}
+    <div class="form-group">
+      <label for="map_{{ champ }}">
+        {{ libelles[champ] }}
+        {% if info.auto[champ] %}
+          <span class="badge badge--green" style="margin-left:6px">détecté</span>
+        {% else %}
+          <span class="badge badge--amber" style="margin-left:6px">à associer</span>
+        {% endif %}
+      </label>
+      <select id="map_{{ champ }}" name="map_{{ champ }}" required>
+        <option value="">— Choisir une colonne du fichier —</option>
+        {% for col in info.colonnes %}
+        <option value="{{ col }}" {{ 'selected' if info.auto[champ] == col }}>{{ col }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% endfor %}
+
+    <div style="display:flex; gap:10px; margin-top:8px">
+      <button type="submit" class="btn btn--green">{{ icone('check', 16) }} Lancer l'import</button>
+      <a class="btn btn--ghost" href="{{ url_for('imports.index') }}">Annuler</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -66,7 +66,7 @@ class ImportForm(FlaskForm):
             FileAllowed(["csv"], message="Seuls les fichiers CSV sont acceptés."),
         ],
     )
-    submit = SubmitField("Lancer l'import")
+    submit = SubmitField("Analyser le fichier")
 
 
 class ConfirmationForm(FlaskForm):

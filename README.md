@@ -40,8 +40,10 @@ d'environnement `DATABASE_URL` change (voir `app/config.py`).
 3. **Analyse des ventes** — ventes par période, filtres (mois / produit / catégorie),
    tableau détaillé par produit, export CSV.
 4. **Administration** (back-office) — gestion des utilisateurs (CRUD) et des sources.
-5. **Import de données** — upload CSV, pipeline pandas avec contrôles qualité
-   **visibles**, chargement, récapitulatif.
+5. **Import de données** — upload CSV → **écran de correspondance des colonnes**
+   (mapping source → schéma cible, avec auto-détection) → pipeline pandas avec
+   contrôles qualité **visibles**, chargement, récapitulatif. Compatible avec
+   n'importe quel magasin, quel que soit le nommage des colonnes.
 
 ### Rôles et accès (décorateurs de contrôle d'accès)
 
@@ -138,7 +140,13 @@ flask creer-admin --email vous@example.com --nom "Votre Nom"
 
 Depuis un compte Manager/Assistant → **Import de données** → charger
 `sample_data/ventes_exemple.csv` (contient volontairement 4 lignes invalides
-pour illustrer les contrôles qualité).
+pour illustrer les contrôles qualité). L'écran de correspondance s'affiche :
+les colonnes sont auto-détectées, vous confirmez puis lancez l'import.
+
+Pour démontrer la compatibilité **multi-magasins**, chargez
+`sample_data/ventes_magasin_lyon.csv` : ses colonnes sont nommées différemment
+(`date_commande`, `article`, `qte`, `prix`) et séparées par `;` — l'auto-détection
+les reconnaît quand même.
 
 ---
 
@@ -206,6 +214,12 @@ DATABASE_URL=postgresql://... ./scripts/generer_dump.sh
 - **Regroupement des lignes en commandes par horodatage** dans le pipeline :
   sans identifiant de commande dans le CSV, l'instant d'achat est le meilleur
   regroupement (une ligne = un article, un horodatage = un ticket).
+- **Couche de correspondance (mapping) source → cible** dans l'import : le schéma
+  d'entrepôt reste stable (`date, produit, quantité, montant`), mais les colonnes
+  de la source sont libres. Un dictionnaire d'alias auto-détecte les noms courants,
+  et un écran de correspondance permet d'associer les cas non reconnus. La solution
+  fonctionne ainsi pour tout le parc de magasins sans redéveloppement.
+  Détail rédigé pour le dossier : `docs/partie2a_brique_data.md`.
 - **Colonne `mot_de_passe_hash`** ajoutée au modèle `utilisateur` : seule addition
   au schéma métier, indispensable à l'authentification (jamais de mot de passe en clair).
 

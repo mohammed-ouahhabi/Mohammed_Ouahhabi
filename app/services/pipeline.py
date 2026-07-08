@@ -1,21 +1,26 @@
 """Pipeline d'import d'un fichier CSV de ventes (brique « data engineer »).
 
-Objectif : rendre le traitement VISIBLE et VÉRIFIABLE. Chaque étape produit un
-compte-rendu affiché à l'écran (cf. maquette « Import de données ») :
+Objectif : rendre le traitement VISIBLE et VÉRIFIABLE, et l'ouvrir à n'importe
+quel magasin. La source est libre (les colonnes peuvent porter des noms
+différents d'un point de vente à l'autre) ; une **couche de correspondance**
+(mapping) normalise le fichier vers le schéma d'entrepôt attendu.
 
-    1. Fichier reçu          -> lecture pandas, vérification des colonnes
-    2. Contrôles qualité     -> doublons, valeurs manquantes, formats incohérents
-    3. Intégration entrepôt  -> insertion des lignes valides via SQLAlchemy
-    4. Mise à jour KPI       -> automatique (les KPI sont recalculés depuis la base)
+Étapes (cf. maquette « Import de données ») :
 
-Format attendu du CSV : colonnes `date, produit, quantite, montant`
-(les accents et majuscules sur les en-têtes sont tolérés).
+    0. Détection des colonnes -> auto-correspondance via un dictionnaire d'alias
+    1. Fichier reçu           -> lecture pandas selon la correspondance choisie
+    2. Contrôles qualité      -> doublons, valeurs manquantes, formats incohérents
+    3. Intégration entrepôt   -> insertion des lignes valides via SQLAlchemy
+    4. Mise à jour KPI        -> automatique (les KPI sont recalculés depuis la base)
+
+Schéma cible (entrepôt) : `date, produit, quantite, montant`. Ce n'est pas une
+contrainte de nommage imposée à la source, c'est le minimum vital pour calculer
+les KPI. La source, elle, peut nommer ses colonnes comme elle veut.
 
 Regroupement en commandes : les lignes portant le même horodatage (`date`) sont
-considérées comme un même ticket et regroupées dans une seule `commande`. Choix
-assumé et explicable : sans identifiant de commande dans le fichier, l'instant
-d'achat est le meilleur regroupement disponible.
+considérées comme un même ticket et regroupées dans une seule `commande`.
 """
+import re
 import unicodedata
 from datetime import datetime
 
@@ -25,7 +30,38 @@ from sqlalchemy import func
 from ..extensions import db
 from ..models import Commande, LigneCommande, Produit, ImportFichier
 
-COLONNES_ATTENDUES = ["date", "produit", "quantite", "montant"]
+# Champs du schéma cible (entrepôt) et leurs libellés d'affichage.
+CHAMPS_CIBLE = ["date", "produit", "quantite", "montant"]
+LIBELLES_CHAMPS = {
+    "date": "Date",
+    "produit": "Produit",
+    "quantite": "Quantité",
+    "montant": "Montant",
+}
+# Rétro-compatibilité (ancien nom de la constante).
+COLONNES_ATTENDUES = CHAMPS_CIBLE
+
+# Dictionnaire d'alias : pour chaque champ cible, les noms de colonnes source
+# reconnus automatiquement (déjà normalisés : sans accent, minuscules, sans
+# espaces ni séparateurs). Facile à enrichir quand un nouveau format apparaît.
+ALIAS = {
+    "date": {
+        "date", "dateheure", "datecommande", "datevente", "orderdate",
+        "jour", "horodatage", "timestamp", "datetime", "dateticket",
+    },
+    "produit": {
+        "produit", "produits", "article", "item", "product", "libelle",
+        "designation", "nomproduit", "pizza", "reference",
+    },
+    "quantite": {
+        "quantite", "quantites", "qte", "qty", "quantity", "nombre", "nb",
+        "volume",
+    },
+    "montant": {
+        "montant", "montants", "prix", "amount", "total", "ca",
+        "chiffreaffaires", "montantttc", "prixtotal", "montanteuros", "valeur",
+    },
+}
 
 # Formats de date acceptés à la lecture.
 FORMATS_DATE = [
@@ -39,13 +75,100 @@ FORMATS_DATE = [
 
 
 class ErreurFichier(Exception):
-    """Levée quand le fichier est structurellement invalide (mauvais format,
-    colonnes manquantes) : l'import ne peut pas démarrer."""
+    """Levée quand le fichier est structurellement invalide (illisible, ou aucune
+    correspondance possible) : l'import ne peut pas démarrer."""
 
 
 def _sans_accents(texte):
     texte = unicodedata.normalize("NFKD", str(texte))
     return "".join(c for c in texte if not unicodedata.combining(c)).strip().lower()
+
+
+def _cle(texte):
+    """Normalise un en-tête pour la comparaison : sans accent, minuscule, et sans
+    espaces / underscores / tirets. « Date Commande » et « date_commande » ->
+    « datecommande »."""
+    return re.sub(r"[\s_\-.]+", "", _sans_accents(texte))
+
+
+def _lire_csv(chemin, nrows=None):
+    """Lit le CSV (séparateur auto-détecté) en gardant tout en texte : on parse
+    et on valide nous-mêmes, colonne par colonne, dans les contrôles qualité."""
+    try:
+        return pd.read_csv(chemin, sep=None, engine="python", nrows=nrows, dtype=str)
+    except Exception as exc:  # fichier corrompu, binaire, vide...
+        raise ErreurFichier(
+            "Le fichier n'a pas pu être lu comme un CSV valide."
+        ) from exc
+
+
+def detecter_colonnes(chemin):
+    """Étape 0 : lit les en-têtes et propose une correspondance automatique.
+
+    Renvoie un dictionnaire :
+        {
+          "colonnes": [noms réels des colonnes du fichier],
+          "auto":     {champ_cible: colonne_source ou None},
+          "apercu":   [3 premières lignes, pour aider l'utilisateur à mapper],
+        }
+    """
+    df = _lire_csv(chemin, nrows=5)
+    colonnes = [str(c) for c in df.columns]
+    cles = {col: _cle(col) for col in colonnes}
+
+    auto = {}
+    for champ in CHAMPS_CIBLE:
+        trouve = None
+        for col in colonnes:
+            if cles[col] in ALIAS[champ]:
+                trouve = col
+                break
+        auto[champ] = trouve
+
+    apercu = df.head(3).fillna("").astype(str).to_dict(orient="records")
+    return {"colonnes": colonnes, "auto": auto, "apercu": apercu}
+
+
+def mapping_complet(mapping):
+    """Vrai si les 4 champs cibles sont associés à une colonne source."""
+    return all(mapping.get(c) for c in CHAMPS_CIBLE)
+
+
+def lire_avec_mapping(chemin, mapping):
+    """Étape 1 : lit le fichier et renomme les colonnes source vers le schéma cible.
+
+    `mapping` : {champ_cible: nom_de_colonne_dans_le_fichier}.
+    Lève ErreurFichier si la correspondance est incomplète ou si une colonne
+    annoncée n'existe pas dans le fichier.
+    """
+    if not mapping_complet(mapping):
+        manquants = [LIBELLES_CHAMPS[c] for c in CHAMPS_CIBLE if not mapping.get(c)]
+        raise ErreurFichier(
+            "Champs non renseignés : " + ", ".join(manquants)
+            + ". Associez chaque champ à une colonne du fichier."
+        )
+
+    df = _lire_csv(chemin)
+    df.columns = [str(c) for c in df.columns]
+
+    manquantes = [src for src in mapping.values() if src not in df.columns]
+    if manquantes:
+        raise ErreurFichier(
+            "Colonnes introuvables dans le fichier : " + ", ".join(manquantes) + "."
+        )
+
+    # Renomme colonne_source -> champ_cible, puis ne garde que les 4 colonnes.
+    inverse = {mapping[champ]: champ for champ in CHAMPS_CIBLE}
+    df = df.rename(columns=inverse)
+    return df[CHAMPS_CIBLE].copy()
+
+
+def lire_et_normaliser(chemin):
+    """Lecture « automatique » : détecte les colonnes puis applique la
+    correspondance auto. Pratique en ligne de commande / tests ; lève
+    ErreurFichier si l'auto-détection ne couvre pas les 4 champs."""
+    info = detecter_colonnes(chemin)
+    return lire_avec_mapping(chemin, info["auto"])
 
 
 def _parser_date(valeur):
@@ -61,39 +184,6 @@ def _parser_date(valeur):
         except ValueError:
             continue
     return None
-
-
-def lire_et_normaliser(chemin):
-    """Étape 1 : lecture du CSV et vérification de la structure.
-
-    Renvoie un DataFrame dont les colonnes sont renommées vers les noms attendus.
-    Lève ErreurFichier si le fichier est illisible ou s'il manque des colonnes.
-    """
-    try:
-        df = pd.read_csv(chemin, sep=None, engine="python")
-    except Exception as exc:  # fichier corrompu, binaire, vide...
-        raise ErreurFichier(
-            "Le fichier n'a pas pu être lu comme un CSV valide."
-        ) from exc
-
-    # Fait correspondre les en-têtes réels (accents/majuscules tolérés) aux
-    # noms attendus. « quantité » -> « quantite ».
-    correspondances = {}
-    for col in df.columns:
-        cle = _sans_accents(col)
-        if cle in COLONNES_ATTENDUES:
-            correspondances[col] = cle
-    df = df.rename(columns=correspondances)
-
-    manquantes = [c for c in COLONNES_ATTENDUES if c not in df.columns]
-    if manquantes:
-        raise ErreurFichier(
-            "Colonnes manquantes ou mal nommées : "
-            + ", ".join(manquantes)
-            + ". Colonnes attendues : date, produit, quantite, montant."
-        )
-
-    return df[COLONNES_ATTENDUES].copy()
 
 
 def controler_qualite(df):
@@ -234,14 +324,22 @@ def integrer(lignes_valides, point_de_vente_id):
     return len(lignes_valides)
 
 
-def traiter_fichier(chemin, nom_fichier, utilisateur, point_de_vente_id):
+def traiter_fichier(chemin, nom_fichier, utilisateur, point_de_vente_id, mapping=None):
     """Orchestration complète du pipeline, avec journalisation dans import_fichier.
 
-    Renvoie un dictionnaire `rapport` consommé par le template pour afficher la
-    timeline et le récapitulatif. Lève ErreurFichier si le fichier est invalide.
+    `mapping` : correspondance colonnes source -> champs cibles. Si None, on tente
+    l'auto-détection (pratique pour les tests / la CLI).
+
+    Renvoie un dictionnaire `rapport` consommé par le template. Lève ErreurFichier
+    si le fichier est invalide.
     """
-    # Étapes 1 & 2
-    df = lire_et_normaliser(chemin)
+    # Étape 1 : lecture selon la correspondance
+    if mapping is None:
+        df = lire_et_normaliser(chemin)
+    else:
+        df = lire_avec_mapping(chemin, mapping)
+
+    # Étape 2 : contrôles qualité
     lignes_valides, rapport = controler_qualite(df)
 
     # Étape 3 : intégration

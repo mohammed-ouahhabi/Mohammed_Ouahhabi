@@ -14,3 +14,11 @@ qualité affichés à l'écran :
 
 Les 13 lignes valides sont intégrées, les 4 autres rejetées — le récapitulatif
 affiche « 4 lignes rejetées ».
+
+---
+
+`ventes_magasin_lyon.csv` démontre la **compatibilité multi-magasins** : ses
+colonnes portent des noms différents (`date_commande`, `article`, `qte`, `prix`)
+et sont séparées par `;`. L'écran de correspondance les **auto-détecte** et les
+associe au schéma cible — aucun redéveloppement nécessaire pour une nouvelle
+source.

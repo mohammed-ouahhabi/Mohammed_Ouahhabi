@@ -91,3 +91,61 @@ def test_fichier_illisible_leve_erreur(app):
             pipeline.lire_et_normaliser(chemin)
     finally:
         os.remove(chemin)
+
+
+# --- Couche de correspondance (mapping) : import multi-magasins ------------
+
+def test_detection_alias_noms_differents(app):
+    # Des colonnes nommées autrement doivent être reconnues automatiquement.
+    chemin = _ecrire_csv("date_commande,article,qte,prix\n2026-06-01 12:00,Reine,1,13.90\n")
+    try:
+        info = pipeline.detecter_colonnes(chemin)
+        assert info["auto"]["date"] == "date_commande"
+        assert info["auto"]["produit"] == "article"
+        assert info["auto"]["quantite"] == "qte"
+        assert info["auto"]["montant"] == "prix"
+        assert len(info["apercu"]) == 1
+    finally:
+        os.remove(chemin)
+
+
+def test_mapping_explicite_colonnes_exotiques(app, db):
+    # Colonnes non reconnues automatiquement : l'utilisateur les associe à la main.
+    from app.models import PointDeVente
+    pdv = PointDeVente.query.first()
+    manager = Utilisateur.query.filter_by(role=ROLE_MANAGER).first()
+    chemin = _ecrire_csv("quand,quoi,combien,euros\n2026-07-05 12:00,Reine,2,27.80\n")
+    mapping = {"date": "quand", "produit": "quoi", "quantite": "combien", "montant": "euros"}
+    try:
+        rapport = pipeline.traiter_fichier(chemin, "custom.csv", manager, pdv.id_point_de_vente, mapping=mapping)
+        assert rapport["lignes_integrees"] == 1
+        assert rapport["statut"] == "termine"
+    finally:
+        os.remove(chemin)
+
+
+def test_mapping_incomplet_leve_erreur(app):
+    chemin = _ecrire_csv("a,b\n1,2\n")
+    try:
+        with pytest.raises(pipeline.ErreurFichier):
+            pipeline.lire_avec_mapping(
+                chemin, {"date": "a", "produit": "b", "quantite": None, "montant": None}
+            )
+    finally:
+        os.remove(chemin)
+
+
+def test_upload_affiche_ecran_correspondance(client):
+    from tests.conftest import connexion
+    connexion(client, "manager@test.fr")
+    data = {
+        "fichier": (
+            io.BytesIO(b"date_commande,article,qte,prix\n2026-06-01 12:00,Reine,1,13.90\n"),
+            "ventes.csv",
+        )
+    }
+    r = client.post("/import/", data=data, content_type="multipart/form-data", follow_redirects=True)
+    html = r.get_data(as_text=True)
+    assert r.status_code == 200
+    assert "Correspondance" in html
+    assert "date_commande" in html  # la colonne réelle du fichier est proposée

@@ -17,7 +17,9 @@
     <div class="dropzone__icon">{{ icone('upload', 30) }}</div>
     <div class="dropzone__title">Glissez votre fichier ici ou parcourez</div>
     <p class="dropzone__hint">
-      Format attendu : CSV structuré (colonnes date, produit, quantité, montant) — 10 Mo max
+      Fichier CSV de ventes contenant une date, un produit, une quantité et un montant
+      — quel que soit le nom des colonnes (10 Mo max). Vous confirmerez la correspondance
+      à l'étape suivante.
     </p>
     {{ form.fichier(class="", **{"data-file-input": true}) }}
     <button class="btn btn--primary" type="button" data-browse>Parcourir</button>
