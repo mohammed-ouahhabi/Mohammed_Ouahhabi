@@ -13,6 +13,7 @@ from app.models import (
     Produit,
     Commande,
     LigneCommande,
+    Vente,
     ROLE_MANAGER,
     ROLE_ASSISTANT,
     ROLE_PREMIER_EQUIPIER,
@@ -74,6 +75,13 @@ def _semer(db):
                   date_heure=datetime(2026, 6, 1, 20, 0), montant_total=13.90)
     c2.lignes.append(LigneCommande(produit_id=reine.id_produit, quantite=1, montant=13.90))
     db.session.add_all([c1, c2])
+    db.session.flush()
+
+    # Une vente (encaissement) par commande — cohérente avec montant_total.
+    db.session.add(Vente(commande_id=c1.id_commande, montant=30.30,
+                         date_vente=c1.date_heure, mode_paiement="Carte"))
+    db.session.add(Vente(commande_id=c2.id_commande, montant=13.90,
+                         date_vente=c2.date_heure, mode_paiement="Espèces"))
     db.session.commit()
 
 

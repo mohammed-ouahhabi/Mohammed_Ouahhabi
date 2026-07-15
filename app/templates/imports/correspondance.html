@@ -60,6 +60,22 @@
     </div>
     {% endfor %}
 
+    {# Champs facultatifs : ignorés s'ils ne sont pas associés (ex. mode de paiement) #}
+    {% for champ in champs_optionnels %}
+    <div class="form-group">
+      <label for="map_{{ champ }}">
+        {{ libelles[champ] }}
+        <span class="badge badge--grey" style="margin-left:6px">facultatif</span>
+      </label>
+      <select id="map_{{ champ }}" name="map_{{ champ }}">
+        <option value="">— Ne pas importer —</option>
+        {% for col in info.colonnes %}
+        <option value="{{ col }}" {{ 'selected' if info.auto[champ] == col }}>{{ col }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% endfor %}
+
     <div style="display:flex; gap:10px; margin-top:8px">
       <button type="submit" class="btn btn--green">{{ icone('check', 16) }} Lancer l'import</button>
       <a class="btn btn--ghost" href="{{ url_for('imports.index') }}">Annuler</a>

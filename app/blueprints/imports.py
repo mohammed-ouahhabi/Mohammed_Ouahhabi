@@ -87,6 +87,7 @@ def index():
             jeton=jeton,
             nom_fichier=nom_securise,
             champs=pipeline.CHAMPS_CIBLE,
+            champs_optionnels=pipeline.CHAMPS_OPTIONNELS,
             libelles=pipeline.LIBELLES_CHAMPS,
         )
 
@@ -109,8 +110,10 @@ def traiter():
         flash("Fichier expiré ou introuvable. Merci de le recharger.", "error")
         return redirect(url_for("imports.index"))
 
-    # Correspondance saisie par l'utilisateur : champ_cible -> colonne source.
-    mapping = {c: (request.form.get("map_" + c) or None) for c in pipeline.CHAMPS_CIBLE}
+    # Correspondance saisie par l'utilisateur : champ_cible -> colonne source
+    # (champs obligatoires + champs facultatifs comme le mode de paiement).
+    champs = pipeline.CHAMPS_CIBLE + pipeline.CHAMPS_OPTIONNELS
+    mapping = {c: (request.form.get("map_" + c) or None) for c in champs}
 
     rapport = None
     try:

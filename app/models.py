@@ -135,6 +135,9 @@ class Commande(db.Model):
     lignes = db.relationship(
         "LigneCommande", back_populates="commande", cascade="all, delete-orphan"
     )
+    ventes = db.relationship(
+        "Vente", back_populates="commande", cascade="all, delete-orphan"
+    )
 
     def __repr__(self):
         return f"<Commande {self.id_commande} le {self.date_heure}>"
@@ -158,6 +161,31 @@ class LigneCommande(db.Model):
 
     def __repr__(self):
         return f"<LigneCommande {self.id_ligne_commande}>"
+
+
+class Vente(db.Model):
+    """Encaissement d'une commande (issu du système source Pulse de Domino's).
+
+    Porte le mode de paiement, absent du reste du modèle. IMPORTANT : cette table
+    ne sert JAMAIS au calcul du chiffre d'affaires (toujours issu de
+    ligne_commande, source unique de vérité). `montant` reflète l'encaissement et
+    doit rester cohérent avec commande.montant_total.
+    """
+
+    __tablename__ = "vente"
+
+    id_vente = db.Column(db.Integer, primary_key=True)
+    commande_id = db.Column(
+        db.Integer, db.ForeignKey("commande.id_commande"), nullable=False
+    )
+    montant = db.Column(db.Numeric(10, 2), nullable=False)
+    mode_paiement = db.Column(db.String(40), nullable=True)
+    date_vente = db.Column(db.DateTime, nullable=False)
+
+    commande = db.relationship("Commande", back_populates="ventes")
+
+    def __repr__(self):
+        return f"<Vente {self.id_vente} ({self.mode_paiement})>"
 
 
 class ImportFichier(db.Model):

@@ -28,15 +28,18 @@ import pandas as pd
 from sqlalchemy import func
 
 from ..extensions import db
-from ..models import Commande, LigneCommande, Produit, ImportFichier
+from ..models import Commande, LigneCommande, Produit, ImportFichier, Vente
 
 # Champs du schéma cible (entrepôt) et leurs libellés d'affichage.
 CHAMPS_CIBLE = ["date", "produit", "quantite", "montant"]
+# Champs facultatifs : mappés s'ils sont présents, ignorés sinon (pas d'erreur).
+CHAMPS_OPTIONNELS = ["mode_paiement"]
 LIBELLES_CHAMPS = {
     "date": "Date",
     "produit": "Produit",
     "quantite": "Quantité",
     "montant": "Montant",
+    "mode_paiement": "Mode de paiement",
 }
 # Rétro-compatibilité (ancien nom de la constante).
 COLONNES_ATTENDUES = CHAMPS_CIBLE
@@ -60,6 +63,10 @@ ALIAS = {
     "montant": {
         "montant", "montants", "prix", "amount", "total", "ca",
         "chiffreaffaires", "montantttc", "prixtotal", "montanteuros", "valeur",
+    },
+    "mode_paiement": {
+        "modepaiement", "paiement", "reglement", "payment", "paymentmethod",
+        "moyenpaiement",
     },
 }
 
@@ -116,8 +123,9 @@ def detecter_colonnes(chemin):
     colonnes = [str(c) for c in df.columns]
     cles = {col: _cle(col) for col in colonnes}
 
+    # Auto-correspondance des champs obligatoires ET facultatifs.
     auto = {}
-    for champ in CHAMPS_CIBLE:
+    for champ in CHAMPS_CIBLE + CHAMPS_OPTIONNELS:
         trouve = None
         for col in colonnes:
             if cles[col] in ALIAS[champ]:
@@ -151,16 +159,25 @@ def lire_avec_mapping(chemin, mapping):
     df = _lire_csv(chemin)
     df.columns = [str(c) for c in df.columns]
 
-    manquantes = [src for src in mapping.values() if src not in df.columns]
+    # Seules les colonnes des champs OBLIGATOIRES doivent exister.
+    manquantes = [mapping[c] for c in CHAMPS_CIBLE if mapping[c] not in df.columns]
     if manquantes:
         raise ErreurFichier(
             "Colonnes introuvables dans le fichier : " + ", ".join(manquantes) + "."
         )
 
-    # Renomme colonne_source -> champ_cible, puis ne garde que les 4 colonnes.
+    # Renomme colonne_source -> champ_cible pour les champs obligatoires...
     inverse = {mapping[champ]: champ for champ in CHAMPS_CIBLE}
+    colonnes_gardees = list(CHAMPS_CIBLE)
+    # ... puis pour les champs facultatifs réellement présents dans le fichier.
+    for opt in CHAMPS_OPTIONNELS:
+        src = mapping.get(opt)
+        if src and src in df.columns:
+            inverse[src] = opt
+            colonnes_gardees.append(opt)
+
     df = df.rename(columns=inverse)
-    return df[CHAMPS_CIBLE].copy()
+    return df[colonnes_gardees].copy()
 
 
 def lire_et_normaliser(chemin):
@@ -203,6 +220,7 @@ def controler_qualite(df):
 
     lignes_valides = []
     vus = set()  # pour détecter les doublons (date, produit, quantite, montant)
+    a_mode_paiement = "mode_paiement" in df.columns
 
     for _, row in df.iterrows():
         date_val = _parser_date(row["date"])
@@ -243,8 +261,19 @@ def controler_qualite(df):
             continue
         vus.add(cle)
 
+        # Champ facultatif : mode de paiement (rattaché à la commande à l'intégration).
+        mode = None
+        if a_mode_paiement and pd.notna(row["mode_paiement"]):
+            mode = str(row["mode_paiement"]).strip() or None
+
         lignes_valides.append(
-            {"date": date_val, "produit": produit, "quantite": quantite, "montant": montant}
+            {
+                "date": date_val,
+                "produit": produit,
+                "quantite": quantite,
+                "montant": montant,
+                "mode_paiement": mode,
+            }
         )
 
     rejetees = total - len(lignes_valides)
@@ -295,6 +324,7 @@ def integrer(lignes_valides, point_de_vente_id):
     """
     cache_produits = {}
     commandes = {}  # date_heure -> Commande
+    modes = {}      # date_heure -> mode de paiement retenu pour la commande
 
     for ligne in lignes_valides:
         produit = _produit_ou_creer(cache_produits, ligne["produit"])
@@ -311,6 +341,10 @@ def integrer(lignes_valides, point_de_vente_id):
             db.session.flush()
             commandes[cle_cmd] = commande
 
+        # Mode de paiement au niveau du ticket : on retient la 1re valeur non vide.
+        if modes.get(cle_cmd) is None and ligne.get("mode_paiement"):
+            modes[cle_cmd] = ligne["mode_paiement"]
+
         commande.lignes.append(
             LigneCommande(
                 produit_id=produit.id_produit,
@@ -319,6 +353,17 @@ def integrer(lignes_valides, point_de_vente_id):
             )
         )
         commande.montant_total = float(commande.montant_total or 0) + ligne["montant"]
+
+    # Une vente (encaissement) par commande — issue du système source Pulse.
+    for cle_cmd, commande in commandes.items():
+        db.session.add(
+            Vente(
+                commande_id=commande.id_commande,
+                montant=commande.montant_total,
+                date_vente=commande.date_heure,
+                mode_paiement=modes.get(cle_cmd),
+            )
+        )
 
     db.session.commit()
     return len(lignes_valides)

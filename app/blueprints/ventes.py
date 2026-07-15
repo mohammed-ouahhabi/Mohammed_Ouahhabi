@@ -54,6 +54,7 @@ def index():
 
     detail = kpi.detail_par_produit(pdv_id, debut, fin, categorie, produit_id)
     graphe = kpi.ventes_par_periode(pdv_id, debut, fin)
+    paiements = kpi.repartition_paiements(pdv_id, debut, fin, categorie, produit_id)
 
     categories = [
         c[0]
@@ -71,6 +72,7 @@ def index():
         "ventes/index.html",
         detail=detail,
         graphe=graphe,
+        paiements=paiements,
         categories=categories,
         produits=produits,
         mois_selectionne=debut.strftime("%Y-%m"),

@@ -82,6 +82,27 @@ statut. Cette traçabilité permet d'auditer l'historique des chargements et de
 suivre la qualité des sources dans le temps — un réflexe de gouvernance des
 données indispensable dès qu'un pipeline alimente des indicateurs de décision.
 
+## 4 bis. La table `vente` (système source Pulse)
+
+Le modèle inclut une table `vente`, issue du **système source réel de Domino's
+(Pulse)** : elle enregistre l'**encaissement** d'une commande et son **mode de
+paiement** (Carte, Espèces, Ticket resto). Deux points de conception importants :
+
+- **Source unique de vérité pour le CA.** La table `vente` ne sert *jamais* au
+  calcul du chiffre d'affaires. Le CA reste calculé exclusivement à partir de
+  `ligne_commande`. On évite ainsi d'avoir deux sources qui finiraient par
+  diverger ; `vente.montant` reflète l'encaissement et reste cohérent avec le
+  montant de la commande.
+- **Périmètre maîtrisé.** Les autres tables de Pulse (Clients, Stock, Employés,
+  Livraisons) sont volontairement **hors périmètre** : le projet vise le pilotage
+  de la performance, pas la gestion opérationnelle complète. La table `vente`
+  apporte une exploitation concrète — la **répartition des encaissements par mode
+  de paiement**, affichée sur l'écran d'analyse des ventes.
+
+Côté pipeline, `mode_paiement` est un **champ facultatif** de la couche de
+correspondance : reconnu automatiquement s'il est présent dans le fichier,
+simplement ignoré sinon (aucune erreur).
+
 ## 5. Ce que cette conception démontre
 
 - **Séparation source / cible** : le schéma d'entrepôt reste stable, la variété

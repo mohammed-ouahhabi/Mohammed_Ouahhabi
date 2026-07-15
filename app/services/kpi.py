@@ -16,7 +16,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import func
 
 from ..extensions import db
-from ..models import Commande, LigneCommande, Produit
+from ..models import Commande, LigneCommande, Produit, Vente
 
 
 def _base_lignes(point_de_vente_id, debut=None, fin=None):
@@ -125,6 +125,47 @@ def detail_par_produit(point_de_vente_id, debut=None, fin=None, categorie=None, 
         }
         for r in lignes
     ]
+
+
+def repartition_paiements(point_de_vente_id, debut=None, fin=None, categorie=None, produit_id=None):
+    """Montant encaissé par mode de paiement (table `vente`), sur la période.
+
+    N'entre PAS dans le calcul du CA (toujours issu de ligne_commande) : il s'agit
+    seulement de montrer la ventilation des encaissements. Les ventes sans mode de
+    paiement renseigné sont ignorées.
+    """
+    q = (
+        db.session.query(
+            Vente.mode_paiement.label("mode"),
+            func.coalesce(func.sum(Vente.montant), 0).label("montant"),
+        )
+        .join(Commande, Vente.commande_id == Commande.id_commande)
+        .filter(Commande.point_de_vente_id == point_de_vente_id)
+        .filter(Vente.mode_paiement.isnot(None))
+    )
+    if debut is not None:
+        q = q.filter(Commande.date_heure >= debut)
+    if fin is not None:
+        q = q.filter(Commande.date_heure < fin)
+
+    # Filtres produit / catégorie : on restreint aux commandes concernées
+    # (le mode de paiement est une propriété du ticket, pas du produit).
+    if categorie or produit_id:
+        sous_requete = db.session.query(LigneCommande.commande_id).join(
+            Produit, LigneCommande.produit_id == Produit.id_produit
+        )
+        if categorie:
+            sous_requete = sous_requete.filter(Produit.categorie == categorie)
+        if produit_id:
+            sous_requete = sous_requete.filter(Produit.id_produit == produit_id)
+        q = q.filter(Commande.id_commande.in_(sous_requete))
+
+    lignes = (
+        q.group_by(Vente.mode_paiement)
+        .order_by(func.sum(Vente.montant).desc())
+        .all()
+    )
+    return [{"mode": r.mode, "montant": float(r.montant or 0)} for r in lignes if r.mode]
 
 
 def pics_activite(point_de_vente_id, debut=None, fin=None):

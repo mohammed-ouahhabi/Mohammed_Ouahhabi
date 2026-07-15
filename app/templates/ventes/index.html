@@ -74,7 +74,21 @@
   </div>
 </div>
 
+{# --- Répartition par mode de paiement (table `vente`, système Pulse) --- #}
+<div class="card">
+  <h2 class="card__title">Répartition par mode de paiement</h2>
+  {% if paiements %}
+  <div class="chart-box">
+    <canvas id="chart-paiements" role="img"
+            aria-label="Répartition des encaissements par mode de paiement"></canvas>
+  </div>
+  {% else %}
+  <p class="subtitle">Aucune donnée de paiement sur la période sélectionnée.</p>
+  {% endif %}
+</div>
+
 <script id="data-ventes" type="application/json">{{ graphe | tojson }}</script>
+<script id="data-paiements" type="application/json">{{ paiements | tojson }}</script>
 {% endblock %}
 
 {% block scripts %}
@@ -96,6 +110,33 @@
         scales: {
           x: { grid: { display: false }, ticks: { color: "#64748b", maxTicksLimit: 12 } },
           y: { grid: { color: "#eef2f7" }, ticks: { color: "#64748b" }, beginAtZero: true }
+        }
+      }
+    });
+  }
+
+  // Répartition par mode de paiement (camembert / doughnut)
+  var pel = document.getElementById("data-paiements");
+  var paiements = [];
+  try { paiements = JSON.parse(pel.textContent); } catch (e) {}
+  var cp = document.getElementById("chart-paiements");
+  if (cp && window.Chart && paiements.length) {
+    var palette = ["#0f8b6c", "#12284c", "#94a3b8", "#bfd8cf", "#64748b"];
+    new Chart(cp, {
+      type: "doughnut",
+      data: {
+        labels: paiements.map(function (p) { return p.mode; }),
+        datasets: [{
+          data: paiements.map(function (p) { return Math.round(p.montant * 100) / 100; }),
+          backgroundColor: paiements.map(function (p, i) { return palette[i % palette.length]; }),
+          borderWidth: 2,
+          borderColor: "#fff"
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "right", labels: { color: "#12284c", boxWidth: 14 } }
         }
       }
     });

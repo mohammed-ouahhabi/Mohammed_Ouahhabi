@@ -19,11 +19,16 @@ from app.models import (
     Produit,
     Commande,
     LigneCommande,
+    Vente,
     ROLE_MANAGER,
     ROLE_ASSISTANT,
     ROLE_PREMIER_EQUIPIER,
     ROLE_EQUIPIER,
 )
+
+# Répartition réaliste des modes de paiement (cf. système source Pulse).
+MODES_PAIEMENT = ["Carte", "Espèces", "Ticket resto"]
+POIDS_PAIEMENT = [60, 30, 10]
 
 # Graine fixe : jeu reproductible d'une exécution à l'autre.
 random.seed(42)
@@ -62,6 +67,8 @@ def _choisir_heure():
 def executer_seed():
     """Vide puis recharge les données de démonstration."""
     # On efface les données transactionnelles et les comptes de démo.
+    # (Vente avant Commande pour respecter la contrainte de clé étrangère.)
+    Vente.query.delete()
     LigneCommande.query.delete()
     Commande.query.delete()
     Produit.query.delete()
@@ -126,6 +133,15 @@ def executer_seed():
                     quantite=quantite, montant=montant))
                 total += montant
             commande.montant_total = round(total, 2)
+
+            # Encaissement associé (table vente, issue de Pulse).
+            mode = random.choices(MODES_PAIEMENT, weights=POIDS_PAIEMENT, k=1)[0]
+            db.session.add(Vente(
+                commande_id=commande.id_commande,
+                montant=commande.montant_total,
+                date_vente=commande.date_heure,
+                mode_paiement=mode,
+            ))
             nb_commandes += 1
 
         jour += timedelta(days=1)
