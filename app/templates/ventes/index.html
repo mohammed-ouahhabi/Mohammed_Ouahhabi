@@ -74,6 +74,23 @@
   </div>
 </div>
 
+{# --- Prévision d'affluence (couche aide à la décision) --- #}
+<div class="card">
+  <h2 class="card__title">Prévision d'affluence — 7 prochains jours</h2>
+  <p class="subtitle" style="margin-bottom:14px">
+    Estimation fondée sur la moyenne des créneaux équivalents passés
+    (même jour de la semaine, même heure). Méthode statistique, sans apprentissage.
+  </p>
+  {% if prevision.valeurs | sum > 0 %}
+  <div class="chart-box">
+    <canvas id="chart-prevision" role="img"
+            aria-label="Prévision du nombre de commandes par jour sur les 7 prochains jours"></canvas>
+  </div>
+  {% else %}
+  <p class="subtitle">Historique insuffisant pour établir une prévision.</p>
+  {% endif %}
+</div>
+
 {# --- Répartition par mode de paiement (table `vente`, système Pulse) --- #}
 <div class="card">
   <h2 class="card__title">Répartition par mode de paiement</h2>
@@ -89,6 +106,7 @@
 
 <script id="data-ventes" type="application/json">{{ graphe | tojson }}</script>
 <script id="data-paiements" type="application/json">{{ paiements | tojson }}</script>
+<script id="data-prevision" type="application/json">{{ {'labels': prevision.labels, 'valeurs': prevision.valeurs} | tojson }}</script>
 {% endblock %}
 
 {% block scripts %}
@@ -137,6 +155,36 @@
         responsive: true, maintainAspectRatio: false,
         plugins: {
           legend: { position: "right", labels: { color: "#12284c", boxWidth: 14 } }
+        }
+      }
+    });
+  }
+
+  // Prévision d'affluence — 7 prochains jours (ligne)
+  var prev = { labels: [], valeurs: [] };
+  var prel = document.getElementById("data-prevision");
+  try { prev = JSON.parse(prel.textContent); } catch (e) {}
+  var cprev = document.getElementById("chart-prevision");
+  if (cprev && window.Chart && prev.valeurs.length) {
+    new Chart(cprev, {
+      type: "line",
+      data: {
+        labels: prev.labels,
+        datasets: [{
+          label: "Commandes estimées",
+          data: prev.valeurs,
+          borderColor: "#0f8b6c",
+          backgroundColor: "rgba(15, 139, 108, 0.12)",
+          fill: true, tension: 0.35, borderWidth: 2,
+          pointRadius: 3, pointBackgroundColor: "#0f8b6c"
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: "#64748b" } },
+          y: { grid: { color: "#eef2f7" }, ticks: { color: "#64748b", precision: 0 }, beginAtZero: true }
         }
       }
     });

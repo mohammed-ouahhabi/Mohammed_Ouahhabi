@@ -370,6 +370,28 @@ select { appearance: none; background-image: none; }
 }
 .legal-footer a { color: var(--muted); }
 
+/* Bandeau d'alertes (couche aide à la décision) */
+.alertes { list-style: none; margin: 0; padding: 0; }
+.alerte {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); margin-bottom: 10px;
+}
+.alerte:last-child { margin-bottom: 0; }
+.alerte__pastille {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  background: var(--muted);
+}
+.alerte--info { background: #f4f8fc; }
+.alerte--info .alerte__pastille { background: #3b82f6; }
+.alerte--attention { background: var(--amber-bg); border-color: #f0dcb4; }
+.alerte--attention .alerte__pastille { background: var(--amber-text); }
+.alerte--critique { background: var(--red-bg); border-color: #f1c4bd; }
+.alerte--critique .alerte__pastille { background: var(--red-text); }
+.alerte__texte { flex: 1; display: flex; flex-direction: column; }
+.alerte__titre { font-weight: 700; color: var(--navy); font-size: 14.5px; }
+.alerte__message { color: #475569; font-size: 13px; }
+
 /* Chart containers */
 .chart-box { position: relative; height: 220px; }
 .chart-box--tall { height: 260px; }

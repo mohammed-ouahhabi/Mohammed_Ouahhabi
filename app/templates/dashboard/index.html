@@ -24,6 +24,29 @@
   </div>
 </div>
 
+{# --- Bandeau « À surveiller » (couche aide à la décision) --- #}
+<div class="card">
+  <h2 class="card__title">À surveiller</h2>
+  {% if alertes %}
+    <ul class="alertes">
+      {% for a in alertes %}
+      <li class="alerte alerte--{{ a.niveau }}">
+        <span class="alerte__pastille" aria-hidden="true"></span>
+        <span class="alerte__texte">
+          <span class="alerte__titre">{{ a.titre }}</span>
+          <span class="alerte__message">{{ a.message }}</span>
+        </span>
+        <span class="badge badge--{{ 'amber' if a.niveau != 'info' else 'grey' }}">
+          {{ a.niveau | capitalize }}
+        </span>
+      </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="subtitle">Aucune alerte sur la période. Tout est au vert.</p>
+  {% endif %}
+</div>
+
 {# --- KPI --- #}
 <div class="card">
   <div class="kpi__label">Chiffre d'affaires</div>

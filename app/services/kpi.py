@@ -187,8 +187,12 @@ def pics_activite(point_de_vente_id, debut=None, fin=None):
     return par_heure
 
 
-def evolution_ca(point_de_vente_id, debut, fin):
-    """CA agrégé par jour sur la période (pour le graphique d'évolution)."""
+def ca_par_jour(point_de_vente_id, debut, fin):
+    """CA par jour (dict {date: montant}) — brique réutilisable.
+
+    Source unique de vérité du CA : la somme des montants des lignes de commande.
+    Les autres services (alertes) réutilisent cette fonction au lieu de recalculer.
+    """
     lignes = (
         _base_lignes(point_de_vente_id, debut, fin)
         .with_entities(Commande.date_heure, LigneCommande.montant)
@@ -200,6 +204,12 @@ def evolution_ca(point_de_vente_id, debut, fin):
             continue
         cle = dh.date()
         par_jour[cle] = par_jour.get(cle, 0.0) + float(montant or 0)
+    return par_jour
+
+
+def evolution_ca(point_de_vente_id, debut, fin):
+    """CA agrégé par jour sur la période (pour le graphique d'évolution)."""
+    par_jour = ca_par_jour(point_de_vente_id, debut, fin)
     jours = sorted(par_jour.keys())
     return {
         "labels": [j.strftime("%d/%m") for j in jours],

@@ -16,7 +16,7 @@ from ..models import (
     ROLE_ASSISTANT,
     ROLE_PREMIER_EQUIPIER,
 )
-from ..services import kpi
+from ..services import kpi, prevision
 
 bp = Blueprint("ventes", __name__)
 
@@ -55,6 +55,7 @@ def index():
     detail = kpi.detail_par_produit(pdv_id, debut, fin, categorie, produit_id)
     graphe = kpi.ventes_par_periode(pdv_id, debut, fin)
     paiements = kpi.repartition_paiements(pdv_id, debut, fin, categorie, produit_id)
+    prevision_affluence = prevision.prevoir_7_jours(pdv_id)
 
     categories = [
         c[0]
@@ -73,6 +74,7 @@ def index():
         detail=detail,
         graphe=graphe,
         paiements=paiements,
+        prevision=prevision_affluence,
         categories=categories,
         produits=produits,
         mois_selectionne=debut.strftime("%Y-%m"),
