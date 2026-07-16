@@ -1,10 +1,11 @@
 # Déploiement sur Render (https://render.com) — infrastructure décrite en code.
 # Crée automatiquement : 1 base PostgreSQL managée + 1 service web Flask.
 #
-# À la création, Render :
+# Au démarrage, le service :
 #   1. installe les dépendances (buildCommand) ;
-#   2. applique les migrations puis charge les données de démo (preDeployCommand) ;
-#   3. lance l'application avec gunicorn (startCommand).
+#   2. applique les migrations (flask db upgrade) ;
+#   3. amorce le jeu de démo si la base est vide (scripts.bootstrap) ;
+#   4. lance l'application avec gunicorn, en écoutant sur le port fourni par Render.
 #
 # La variable DATABASE_URL est injectée automatiquement depuis la base ci-dessous,
 # ce qui bascule l'application de SQLite (dev) à PostgreSQL (prod) sans toucher au code.
@@ -20,8 +21,8 @@ services:
     runtime: python
     plan: free
     buildCommand: "pip install -r requirements.txt"
-    preDeployCommand: "flask db upgrade"
-    startCommand: "gunicorn wsgi:app"
+    # Migrations + amorçage + serveur. gunicorn doit écouter sur $PORT (Render).
+    startCommand: "flask db upgrade && python -m scripts.bootstrap && gunicorn wsgi:app --bind 0.0.0.0:$PORT"
     envVars:
       - key: FLASK_APP
         value: wsgi.py
