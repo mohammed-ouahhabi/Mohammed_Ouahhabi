@@ -17,6 +17,15 @@ affiche « 4 lignes rejetées ».
 
 ---
 
+`ventes_demo_juillet.csv` est un **jeu propre prêt à importer** : 186 lignes de
+ventes valides sur deux semaines (1er–14 juillet 2026), regroupées en 93 tickets.
+Il inclut la colonne facultative `mode_paiement` (CB, Espèces, Ticket resto),
+auto-détectée elle aussi. À l'import : **0 ligne rejetée**, 186 lignes intégrées,
+soit 2 561,30 € de chiffre d'affaires. Idéal pour une démo « qui marche du
+premier coup ».
+
+---
+
 `ventes_magasin_lyon.csv` démontre la **compatibilité multi-magasins** : ses
 colonnes portent des noms différents (`date_commande`, `article`, `qte`, `prix`)
 et sont séparées par `;`. L'écran de correspondance les **auto-détecte** et les
