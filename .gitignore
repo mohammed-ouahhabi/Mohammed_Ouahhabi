@@ -24,3 +24,4 @@ app/static/uploads/*
 .DS_Store
 .idea/
 .vscode/
+.history/
