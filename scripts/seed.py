@@ -20,6 +20,7 @@ from app.models import (
     Commande,
     LigneCommande,
     Vente,
+    ImportFichier,
     ROLE_MANAGER,
     ROLE_ASSISTANT,
     ROLE_PREMIER_EQUIPIER,
@@ -66,8 +67,11 @@ def _choisir_heure():
 
 def executer_seed():
     """Vide puis recharge les données de démonstration."""
-    # On efface les données transactionnelles et les comptes de démo.
-    # (Vente avant Commande pour respecter la contrainte de clé étrangère.)
+    # On efface les données transactionnelles et les comptes de démo, dans
+    # l'ordre des dépendances (indispensable en PostgreSQL, où les clés
+    # étrangères sont strictement appliquées) : import_fichier référence
+    # utilisateur, vente et ligne_commande référencent commande.
+    ImportFichier.query.delete()
     Vente.query.delete()
     LigneCommande.query.delete()
     Commande.query.delete()

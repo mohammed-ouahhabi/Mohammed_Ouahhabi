@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% from "partials/icons.html" import icone %}
+{% block title %}Fichier déjà importé — Pilotage PDV{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Import de données</h1>
+    <p class="subtitle">Vérification — ce fichier a déjà été traité</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="flash flash--warning" style="margin-bottom:18px">
+    <strong>Ce fichier a déjà été importé le
+    {{ precedent.date_import.strftime('%d/%m/%Y à %H:%M') }}</strong>
+    (sous le nom « {{ precedent.nom_fichier }} », {{ precedent.lignes_lues | nombre }} lignes lues).
+    Son contenu est strictement identique — l'empreinte SHA-256 des deux fichiers correspond.
+  </div>
+
+  <p class="subtitle" style="margin-bottom:18px">
+    Réimporter ce fichier n'ajoutera aucune donnée : chaque ligne porte une clé
+    d'idempotence, et les lignes déjà présentes dans l'entrepôt seront
+    <strong>ignorées</strong>. Vos indicateurs resteront donc inchangés. Vous pouvez
+    poursuivre pour le vérifier, ou revenir en arrière.
+  </p>
+
+  <form method="post" action="{{ url_for('imports.traiter') }}" style="display:flex; gap:10px">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="jeton" value="{{ jeton }}">
+    <input type="hidden" name="nom_fichier" value="{{ nom_fichier }}">
+    {# On rejoue la correspondance choisie à l'étape précédente #}
+    {% for champ, colonne in mapping.items() %}
+      {% if colonne %}<input type="hidden" name="map_{{ champ }}" value="{{ colonne }}">{% endif %}
+    {% endfor %}
+    <input type="hidden" name="forcer" value="1">
+    <button type="submit" class="btn btn--ghost">Continuer quand même</button>
+    <a class="btn btn--primary" href="{{ url_for('imports.index') }}">Annuler l'import</a>
+  </form>
+</div>
+{% endblock %}

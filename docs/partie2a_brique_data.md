@@ -72,7 +72,31 @@ l'utilisateur (transparence) :
 - **Doublons** — deux lignes strictement identiques (même date, produit,
   quantité, montant) sont dédupliquées.
 
-Seules les lignes valides sont chargées dans l'entrepôt via l'ORM. Les lignes de
+### Idempotence : un import rejouable sans fausser les indicateurs
+
+Un contrôle qualité ligne à ligne ne suffit pas : il dédoublonne *à l'intérieur*
+d'un fichier, mais rien n'empêche de réimporter deux fois le même fichier — et
+de doubler mécaniquement le chiffre d'affaires. Le pipeline garantit donc
+l'**idempotence entre imports**, par deux couches complémentaires :
+
+- **Empreinte du fichier.** Un hachage SHA-256 du contenu est calculé et
+  journalisé. Si un import réussi porte déjà la même empreinte, l'interface
+  avertit (« ce fichier a déjà été importé le … ») et **bloque par défaut** la
+  réintégration, avec une option explicite pour poursuivre.
+- **Clé d'idempotence par ligne.** Chaque ligne reçoit une clé déterministe
+  dérivée de ses données métier (date, produit normalisé, quantité, montant),
+  soumise à une contrainte d'unicité en base. À l'intégration, une ligne dont la
+  clé existe déjà est **ignorée**, jamais réinsérée. Cette couche est la plus
+  robuste : elle couvre aussi le cas d'un fichier mêlant des lignes déjà connues
+  et des lignes nouvelles (recouvrement partiel).
+
+Conformément au principe de **rejet mesuré et non silencieux**, ces lignes
+ignorées ne disparaissent pas : elles sont comptées séparément des lignes
+rejetées, affichées dans le récapitulatif d'import et conservées dans le journal
+`import_fichier`. Réimporter un fichier connu affiche ainsi explicitement :
+*186 lues · 0 intégrées · 186 ignorées* — et les indicateurs restent inchangés.
+
+Seules les lignes valides et nouvelles sont chargées dans l'entrepôt via l'ORM. Les lignes de
 vente partageant le même horodatage sont regroupées en une **commande** (ticket),
 et le montant total de la commande est recalculé à l'intégration.
 

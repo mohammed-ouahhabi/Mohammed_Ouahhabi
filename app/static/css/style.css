@@ -349,6 +349,9 @@ select { appearance: none; background-image: none; }
 .recap-tile--warn { background: var(--amber-bg); }
 .recap-tile--danger { background: var(--red-bg); }
 .recap-tile--danger .recap-tile__value { color: var(--red-text); }
+/* Lignes ignorées (déjà présentes) : information neutre, ni succès ni erreur */
+.recap-tile--info { background: #eef4fb; }
+.recap-tile--info .recap-tile__value { color: #1d4ed8; }
 
 /* =========================================================================
    Bandeau cookies (RGPD)

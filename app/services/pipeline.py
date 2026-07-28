@@ -20,6 +20,7 @@ les KPI. La source, elle, peut nommer ses colonnes comme elle veut.
 Regroupement en commandes : les lignes portant le même horodatage (`date`) sont
 considérées comme un même ticket et regroupées dans une seule `commande`.
 """
+import hashlib
 import re
 import unicodedata
 from datetime import datetime
@@ -84,6 +85,70 @@ FORMATS_DATE = [
 class ErreurFichier(Exception):
     """Levée quand le fichier est structurellement invalide (illisible, ou aucune
     correspondance possible) : l'import ne peut pas démarrer."""
+
+
+# --------------------------------------------------------------------------
+# Idempotence — garantir qu'une même donnée ne peut pas être intégrée deux fois
+# --------------------------------------------------------------------------
+# Deux couches complémentaires :
+#   a) empreinte du FICHIER  : détecte un réimport à l'identique (avertissement) ;
+#   b) clé par LIGNE         : la couche robuste, qui couvre aussi le cas d'un
+#      fichier mêlant des lignes déjà vues et des lignes nouvelles.
+# Sans cela, réimporter un fichier gonfle mécaniquement le chiffre d'affaires.
+
+def calculer_hash_fichier(chemin):
+    """Empreinte SHA-256 du contenu du fichier (lecture par blocs)."""
+    sha = hashlib.sha256()
+    with open(chemin, "rb") as f:
+        for bloc in iter(lambda: f.read(65536), b""):
+            sha.update(bloc)
+    return sha.hexdigest()
+
+
+def cle_ligne(date, produit, quantite, montant):
+    """Clé d'idempotence déterministe d'une ligne de vente.
+
+    Construite sur les données métier de la ligne : date + produit normalisé
+    (sans accent ni casse) + quantité + montant arrondi. Deux lignes identiques
+    issues de deux fichiers différents produisent la même clé.
+    """
+    empreinte = "|".join([
+        date.isoformat(),
+        _sans_accents(produit),
+        str(int(quantite)),
+        f"{float(montant):.2f}",
+    ])
+    return hashlib.sha256(empreinte.encode("utf-8")).hexdigest()
+
+
+def import_precedent(hash_fichier):
+    """Renvoie le dernier import RÉUSSI portant la même empreinte, sinon None."""
+    if not hash_fichier:
+        return None
+    return (
+        ImportFichier.query.filter_by(hash_fichier=hash_fichier, statut="termine")
+        .order_by(ImportFichier.date_import.desc())
+        .first()
+    )
+
+
+def _cles_deja_presentes(cles):
+    """Sous-ensemble des clés déjà présentes dans l'entrepôt.
+
+    Requête par lots pour rester compatible avec les limites de paramètres de
+    SQLite comme de PostgreSQL.
+    """
+    presentes = set()
+    cles = list(cles)
+    for debut in range(0, len(cles), 500):
+        lot = cles[debut:debut + 500]
+        trouvees = (
+            db.session.query(LigneCommande.cle_idempotence)
+            .filter(LigneCommande.cle_idempotence.in_(lot))
+            .all()
+        )
+        presentes.update(c[0] for c in trouvees)
+    return presentes
 
 
 def _sans_accents(texte):
@@ -317,16 +382,39 @@ def _produit_ou_creer(cache, nom):
 
 
 def integrer(lignes_valides, point_de_vente_id):
-    """Étape 3 : insertion en base des lignes valides.
+    """Étape 3 : insertion en base des lignes valides, de façon IDEMPOTENTE.
 
-    Regroupe les lignes par horodatage en commandes, crée les produits manquants,
-    puis insère les lignes de commande. Renvoie le nombre de lignes intégrées.
+    Chaque ligne porte une clé déterministe : celles qui existent déjà dans
+    l'entrepôt sont ignorées (jamais réinsérées), ce qui rend l'import rejouable
+    sans gonfler les indicateurs. Les commandes ne sont créées que pour les
+    lignes réellement nouvelles.
+
+    Renvoie le couple (lignes_intégrées, lignes_ignorées).
     """
+    # 1. Clé de chaque ligne + dédoublonnage à l'intérieur du lot.
+    a_traiter, vues_dans_le_lot, ignorees = [], set(), 0
+    for ligne in lignes_valides:
+        cle = cle_ligne(ligne["date"], ligne["produit"], ligne["quantite"], ligne["montant"])
+        if cle in vues_dans_le_lot:
+            ignorees += 1
+            continue
+        vues_dans_le_lot.add(cle)
+        a_traiter.append((cle, ligne))
+
+    # 2. Écarte les lignes déjà présentes en base (imports précédents).
+    deja = _cles_deja_presentes(cle for cle, _ in a_traiter)
+    nouvelles = [(cle, ligne) for cle, ligne in a_traiter if cle not in deja]
+    ignorees += len(a_traiter) - len(nouvelles)
+
+    if not nouvelles:
+        return 0, ignorees
+
+    # 3. Intégration des seules lignes nouvelles.
     cache_produits = {}
     commandes = {}  # date_heure -> Commande
     modes = {}      # date_heure -> mode de paiement retenu pour la commande
 
-    for ligne in lignes_valides:
+    for cle, ligne in nouvelles:
         produit = _produit_ou_creer(cache_produits, ligne["produit"])
 
         cle_cmd = ligne["date"]
@@ -350,6 +438,7 @@ def integrer(lignes_valides, point_de_vente_id):
                 produit_id=produit.id_produit,
                 quantite=ligne["quantite"],
                 montant=ligne["montant"],
+                cle_idempotence=cle,
             )
         )
         commande.montant_total = float(commande.montant_total or 0) + ligne["montant"]
@@ -366,7 +455,7 @@ def integrer(lignes_valides, point_de_vente_id):
         )
 
     db.session.commit()
-    return len(lignes_valides)
+    return len(nouvelles), ignorees
 
 
 def traiter_fichier(chemin, nom_fichier, utilisateur, point_de_vente_id, mapping=None):
@@ -387,17 +476,22 @@ def traiter_fichier(chemin, nom_fichier, utilisateur, point_de_vente_id, mapping
     # Étape 2 : contrôles qualité
     lignes_valides, rapport = controler_qualite(df)
 
-    # Étape 3 : intégration
-    lignes_integrees = integrer(lignes_valides, point_de_vente_id)
+    # Étape 3 : intégration idempotente
+    lignes_integrees, lignes_ignorees = integrer(lignes_valides, point_de_vente_id)
     rapport["lignes_integrees"] = lignes_integrees
+    rapport["lignes_ignorees"] = lignes_ignorees
 
-    # Journalisation de l'import (table import_fichier)
-    statut = "termine" if lignes_integrees > 0 else "echec"
+    # Journalisation de l'import (table import_fichier).
+    # Un import qui n'apporte que des lignes déjà connues n'est pas un échec :
+    # c'est un import correctement neutralisé par l'idempotence.
+    statut = "termine" if (lignes_integrees > 0 or lignes_ignorees > 0) else "echec"
     enregistrement = ImportFichier(
         utilisateur_id=utilisateur.id_utilisateur,
         nom_fichier=nom_fichier,
         lignes_lues=rapport["lignes_lues"],
         lignes_rejetees=rapport["lignes_rejetees"],
+        lignes_ignorees=lignes_ignorees,
+        hash_fichier=calculer_hash_fichier(chemin),
         statut=statut,
     )
     db.session.add(enregistrement)

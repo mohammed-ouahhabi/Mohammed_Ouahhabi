@@ -1,0 +1,187 @@
+date,produit,quantite,montant,mode_paiement
+2026-07-01 12:15,Reine,2,27.80,CB
+2026-07-01 12:15,Boisson 33cl,2,5.00,CB
+2026-07-01 12:40,Margherita,1,11.90,Espèces
+2026-07-01 12:40,Salade César,1,8.90,Espèces
+2026-07-01 13:05,4 Fromages,1,15.90,CB
+2026-07-01 13:05,Tiramisu,1,4.90,CB
+2026-07-01 19:20,Pepperoni,2,29.80,CB
+2026-07-01 19:20,Boisson 33cl,2,5.00,CB
+2026-07-01 19:50,Calzone,1,14.50,Ticket resto
+2026-07-01 19:50,Végétarienne,1,13.50,Ticket resto
+2026-07-01 20:30,Reine,1,13.90,CB
+2026-07-01 20:30,Tiramisu,2,9.80,CB
+2026-07-02 12:15,Reine,2,27.80,Espèces
+2026-07-02 12:15,Boisson 33cl,2,5.00,Espèces
+2026-07-02 12:40,Margherita,1,11.90,Ticket resto
+2026-07-02 12:40,Salade César,1,8.90,Ticket resto
+2026-07-02 13:05,4 Fromages,1,15.90,Espèces
+2026-07-02 13:05,Tiramisu,1,4.90,Espèces
+2026-07-02 19:20,Pepperoni,2,29.80,Espèces
+2026-07-02 19:20,Boisson 33cl,2,5.00,Espèces
+2026-07-02 19:50,Calzone,1,14.50,CB
+2026-07-02 19:50,Végétarienne,1,13.50,CB
+2026-07-02 20:30,Reine,1,13.90,Espèces
+2026-07-02 20:30,Tiramisu,2,9.80,Espèces
+2026-07-02 21:00,4 Fromages,2,31.80,Ticket resto
+2026-07-02 21:00,Boisson 33cl,1,2.50,Ticket resto
+2026-07-03 12:15,Reine,2,27.80,Ticket resto
+2026-07-03 12:15,Boisson 33cl,2,5.00,Ticket resto
+2026-07-03 12:40,Margherita,1,11.90,CB
+2026-07-03 12:40,Salade César,1,8.90,CB
+2026-07-03 13:05,4 Fromages,1,15.90,Ticket resto
+2026-07-03 13:05,Tiramisu,1,4.90,Ticket resto
+2026-07-03 19:20,Pepperoni,2,29.80,Ticket resto
+2026-07-03 19:20,Boisson 33cl,2,5.00,Ticket resto
+2026-07-03 19:50,Calzone,1,14.50,CB
+2026-07-03 19:50,Végétarienne,1,13.50,CB
+2026-07-03 20:30,Reine,1,13.90,Ticket resto
+2026-07-03 20:30,Tiramisu,2,9.80,Ticket resto
+2026-07-03 21:00,4 Fromages,2,31.80,CB
+2026-07-03 21:00,Boisson 33cl,1,2.50,CB
+2026-07-04 12:15,Reine,2,27.80,CB
+2026-07-04 12:15,Boisson 33cl,2,5.00,CB
+2026-07-04 12:40,Margherita,1,11.90,CB
+2026-07-04 12:40,Salade César,1,8.90,CB
+2026-07-04 13:05,4 Fromages,1,15.90,CB
+2026-07-04 13:05,Tiramisu,1,4.90,CB
+2026-07-04 19:20,Pepperoni,2,29.80,CB
+2026-07-04 19:20,Boisson 33cl,2,5.00,CB
+2026-07-04 19:50,Calzone,1,14.50,CB
+2026-07-04 19:50,Végétarienne,1,13.50,CB
+2026-07-04 20:30,Reine,1,13.90,CB
+2026-07-04 20:30,Tiramisu,2,9.80,CB
+2026-07-05 12:15,Reine,2,27.80,CB
+2026-07-05 12:15,Boisson 33cl,2,5.00,CB
+2026-07-05 12:40,Margherita,1,11.90,CB
+2026-07-05 12:40,Salade César,1,8.90,CB
+2026-07-05 13:05,4 Fromages,1,15.90,CB
+2026-07-05 13:05,Tiramisu,1,4.90,CB
+2026-07-05 19:20,Pepperoni,2,29.80,CB
+2026-07-05 19:20,Boisson 33cl,2,5.00,CB
+2026-07-05 19:50,Calzone,1,14.50,Espèces
+2026-07-05 19:50,Végétarienne,1,13.50,Espèces
+2026-07-05 20:30,Reine,1,13.90,CB
+2026-07-05 20:30,Tiramisu,2,9.80,CB
+2026-07-05 21:00,4 Fromages,2,31.80,CB
+2026-07-05 21:00,Boisson 33cl,1,2.50,CB
+2026-07-06 12:15,Reine,2,27.80,CB
+2026-07-06 12:15,Boisson 33cl,2,5.00,CB
+2026-07-06 12:40,Margherita,1,11.90,Espèces
+2026-07-06 12:40,Salade César,1,8.90,Espèces
+2026-07-06 13:05,4 Fromages,1,15.90,CB
+2026-07-06 13:05,Tiramisu,1,4.90,CB
+2026-07-06 19:20,Pepperoni,2,29.80,CB
+2026-07-06 19:20,Boisson 33cl,2,5.00,CB
+2026-07-06 19:50,Calzone,1,14.50,Ticket resto
+2026-07-06 19:50,Végétarienne,1,13.50,Ticket resto
+2026-07-06 20:30,Reine,1,13.90,CB
+2026-07-06 20:30,Tiramisu,2,9.80,CB
+2026-07-06 21:00,4 Fromages,2,31.80,Espèces
+2026-07-06 21:00,Boisson 33cl,1,2.50,Espèces
+2026-07-07 12:15,Reine,2,27.80,Espèces
+2026-07-07 12:15,Boisson 33cl,2,5.00,Espèces
+2026-07-07 12:40,Margherita,1,11.90,Ticket resto
+2026-07-07 12:40,Salade César,1,8.90,Ticket resto
+2026-07-07 13:05,4 Fromages,1,15.90,Espèces
+2026-07-07 13:05,Tiramisu,1,4.90,Espèces
+2026-07-07 19:20,Pepperoni,2,29.80,Espèces
+2026-07-07 19:20,Boisson 33cl,2,5.00,Espèces
+2026-07-07 19:50,Calzone,1,14.50,CB
+2026-07-07 19:50,Végétarienne,1,13.50,CB
+2026-07-07 20:30,Reine,1,13.90,Espèces
+2026-07-07 20:30,Tiramisu,2,9.80,Espèces
+2026-07-08 12:15,Reine,2,27.80,Ticket resto
+2026-07-08 12:15,Boisson 33cl,2,5.00,Ticket resto
+2026-07-08 12:40,Margherita,1,11.90,CB
+2026-07-08 12:40,Salade César,1,8.90,CB
+2026-07-08 13:05,4 Fromages,1,15.90,Ticket resto
+2026-07-08 13:05,Tiramisu,1,4.90,Ticket resto
+2026-07-08 19:20,Pepperoni,2,29.80,Ticket resto
+2026-07-08 19:20,Boisson 33cl,2,5.00,Ticket resto
+2026-07-08 19:50,Calzone,1,14.50,CB
+2026-07-08 19:50,Végétarienne,1,13.50,CB
+2026-07-08 20:30,Reine,1,13.90,Ticket resto
+2026-07-08 20:30,Tiramisu,2,9.80,Ticket resto
+2026-07-08 21:00,4 Fromages,2,31.80,CB
+2026-07-08 21:00,Boisson 33cl,1,2.50,CB
+2026-07-09 12:15,Reine,2,27.80,CB
+2026-07-09 12:15,Boisson 33cl,2,5.00,CB
+2026-07-09 12:40,Margherita,1,11.90,CB
+2026-07-09 12:40,Salade César,1,8.90,CB
+2026-07-09 13:05,4 Fromages,1,15.90,CB
+2026-07-09 13:05,Tiramisu,1,4.90,CB
+2026-07-09 19:20,Pepperoni,2,29.80,CB
+2026-07-09 19:20,Boisson 33cl,2,5.00,CB
+2026-07-09 19:50,Calzone,1,14.50,CB
+2026-07-09 19:50,Végétarienne,1,13.50,CB
+2026-07-09 20:30,Reine,1,13.90,CB
+2026-07-09 20:30,Tiramisu,2,9.80,CB
+2026-07-09 21:00,4 Fromages,2,31.80,CB
+2026-07-09 21:00,Boisson 33cl,1,2.50,CB
+2026-07-10 12:15,Reine,2,27.80,CB
+2026-07-10 12:15,Boisson 33cl,2,5.00,CB
+2026-07-10 12:40,Margherita,1,11.90,CB
+2026-07-10 12:40,Salade César,1,8.90,CB
+2026-07-10 13:05,4 Fromages,1,15.90,CB
+2026-07-10 13:05,Tiramisu,1,4.90,CB
+2026-07-10 19:20,Pepperoni,2,29.80,CB
+2026-07-10 19:20,Boisson 33cl,2,5.00,CB
+2026-07-10 19:50,Calzone,1,14.50,Espèces
+2026-07-10 19:50,Végétarienne,1,13.50,Espèces
+2026-07-10 20:30,Reine,1,13.90,CB
+2026-07-10 20:30,Tiramisu,2,9.80,CB
+2026-07-11 12:15,Reine,2,27.80,CB
+2026-07-11 12:15,Boisson 33cl,2,5.00,CB
+2026-07-11 12:40,Margherita,1,11.90,Espèces
+2026-07-11 12:40,Salade César,1,8.90,Espèces
+2026-07-11 13:05,4 Fromages,1,15.90,CB
+2026-07-11 13:05,Tiramisu,1,4.90,CB
+2026-07-11 19:20,Pepperoni,2,29.80,CB
+2026-07-11 19:20,Boisson 33cl,2,5.00,CB
+2026-07-11 19:50,Calzone,1,14.50,Ticket resto
+2026-07-11 19:50,Végétarienne,1,13.50,Ticket resto
+2026-07-11 20:30,Reine,1,13.90,CB
+2026-07-11 20:30,Tiramisu,2,9.80,CB
+2026-07-11 21:00,4 Fromages,2,31.80,Espèces
+2026-07-11 21:00,Boisson 33cl,1,2.50,Espèces
+2026-07-12 12:15,Reine,2,27.80,Espèces
+2026-07-12 12:15,Boisson 33cl,2,5.00,Espèces
+2026-07-12 12:40,Margherita,1,11.90,Ticket resto
+2026-07-12 12:40,Salade César,1,8.90,Ticket resto
+2026-07-12 13:05,4 Fromages,1,15.90,Espèces
+2026-07-12 13:05,Tiramisu,1,4.90,Espèces
+2026-07-12 19:20,Pepperoni,2,29.80,Espèces
+2026-07-12 19:20,Boisson 33cl,2,5.00,Espèces
+2026-07-12 19:50,Calzone,1,14.50,CB
+2026-07-12 19:50,Végétarienne,1,13.50,CB
+2026-07-12 20:30,Reine,1,13.90,Espèces
+2026-07-12 20:30,Tiramisu,2,9.80,Espèces
+2026-07-12 21:00,4 Fromages,2,31.80,Ticket resto
+2026-07-12 21:00,Boisson 33cl,1,2.50,Ticket resto
+2026-07-13 12:15,Reine,2,27.80,Ticket resto
+2026-07-13 12:15,Boisson 33cl,2,5.00,Ticket resto
+2026-07-13 12:40,Margherita,1,11.90,CB
+2026-07-13 12:40,Salade César,1,8.90,CB
+2026-07-13 13:05,4 Fromages,1,15.90,Ticket resto
+2026-07-13 13:05,Tiramisu,1,4.90,Ticket resto
+2026-07-13 19:20,Pepperoni,2,29.80,Ticket resto
+2026-07-13 19:20,Boisson 33cl,2,5.00,Ticket resto
+2026-07-13 19:50,Calzone,1,14.50,CB
+2026-07-13 19:50,Végétarienne,1,13.50,CB
+2026-07-13 20:30,Reine,1,13.90,Ticket resto
+2026-07-13 20:30,Tiramisu,2,9.80,Ticket resto
+2026-07-14 12:15,Reine,2,27.80,CB
+2026-07-14 12:15,Boisson 33cl,2,5.00,CB
+2026-07-14 12:40,Margherita,1,11.90,CB
+2026-07-14 12:40,Salade César,1,8.90,CB
+2026-07-14 13:05,4 Fromages,1,15.90,CB
+2026-07-14 13:05,Tiramisu,1,4.90,CB
+2026-07-14 19:20,Pepperoni,2,29.80,CB
+2026-07-14 19:20,Boisson 33cl,2,5.00,CB
+2026-07-14 19:50,Calzone,1,14.50,CB
+2026-07-14 19:50,Végétarienne,1,13.50,CB
+2026-07-14 20:30,Reine,1,13.90,CB
+2026-07-14 20:30,Tiramisu,2,9.80,CB
+2026-07-14 21:00,4 Fromages,2,31.80,CB
+2026-07-14 21:00,Boisson 33cl,1,2.50,CB

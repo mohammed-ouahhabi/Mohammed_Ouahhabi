@@ -155,6 +155,12 @@ class LigneCommande(db.Model):
     )
     quantite = db.Column(db.Integer, nullable=False, default=1)
     montant = db.Column(db.Numeric(10, 2), nullable=False, default=0)
+    # Clé d'idempotence : empreinte déterministe de la ligne source
+    # (date + produit normalisé + quantité + montant). Elle garantit qu'une même
+    # ligne ne peut être intégrée deux fois, même via deux imports différents.
+    # NULL pour les données de démonstration (non issues d'un import) : une
+    # colonne UNIQUE accepte plusieurs NULL, en SQLite comme en PostgreSQL.
+    cle_idempotence = db.Column(db.String(64), unique=True, nullable=True, index=True)
 
     commande = db.relationship("Commande", back_populates="lignes")
     produit = db.relationship("Produit", back_populates="lignes")
@@ -199,13 +205,19 @@ class ImportFichier(db.Model):
     date_import = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     lignes_lues = db.Column(db.Integer, nullable=False, default=0)
     lignes_rejetees = db.Column(db.Integer, nullable=False, default=0)
+    # Lignes valides mais DÉJÀ présentes dans l'entrepôt : ni intégrées, ni
+    # rejetées. On les compte séparément pour que le rejet reste mesuré et
+    # jamais silencieux.
+    lignes_ignorees = db.Column(db.Integer, nullable=False, default=0)
+    # Empreinte SHA-256 du contenu du fichier : permet de détecter un réimport.
+    hash_fichier = db.Column(db.String(64), nullable=True, index=True)
     statut = db.Column(db.String(40), nullable=False, default="en_cours")
 
     utilisateur = db.relationship("Utilisateur", back_populates="imports")
 
     @property
     def lignes_integrees(self):
-        return self.lignes_lues - self.lignes_rejetees
+        return self.lignes_lues - self.lignes_rejetees - (self.lignes_ignorees or 0)
 
     def __repr__(self):
         return f"<ImportFichier {self.nom_fichier} ({self.statut})>"
