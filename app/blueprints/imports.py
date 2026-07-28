@@ -115,6 +115,20 @@ def traiter():
     champs = pipeline.CHAMPS_CIBLE + pipeline.CHAMPS_OPTIONNELS
     mapping = {c: (request.form.get("map_" + c) or None) for c in champs}
 
+    # Garde-fou (couche a) : ce fichier a-t-il déjà été importé avec succès ?
+    # On bloque par défaut ; l'utilisateur peut forcer en connaissance de cause.
+    forcer = request.form.get("forcer") == "1"
+    if not forcer:
+        precedent = pipeline.import_precedent(pipeline.calculer_hash_fichier(chemin))
+        if precedent is not None:
+            return render_template(
+                "imports/doublon.html",
+                precedent=precedent,
+                jeton=jeton,
+                nom_fichier=nom_fichier,
+                mapping=mapping,
+            )
+
     rapport = None
     try:
         rapport = pipeline.traiter_fichier(
@@ -122,6 +136,12 @@ def traiter():
         )
         if rapport["lignes_integrees"] > 0:
             flash(f"Import terminé : {rapport['lignes_integrees']} lignes intégrées.", "success")
+        elif rapport["lignes_ignorees"] > 0:
+            flash(
+                f"Aucune nouvelle donnée : les {rapport['lignes_ignorees']} lignes "
+                "étaient déjà présentes dans l'entrepôt. Les indicateurs sont inchangés.",
+                "warning",
+            )
         else:
             flash("Aucune ligne valide n'a pu être intégrée.", "warning")
     except pipeline.ErreurFichier as exc:

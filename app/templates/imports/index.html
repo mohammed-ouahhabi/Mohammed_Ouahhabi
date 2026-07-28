@@ -63,7 +63,11 @@
         {{ icone('check', 15) }}</span>
       <div>
         <div class="timeline__step-title">Intégration à l'entrepôt</div>
-        <div class="timeline__step-desc">{{ rapport.lignes_integrees | nombre }} lignes intégrées à l'entrepôt</div>
+        <div class="timeline__step-desc">
+          {{ rapport.lignes_integrees | nombre }} lignes intégrées à l'entrepôt{%
+          if rapport.lignes_ignorees %} — {{ rapport.lignes_ignorees | nombre }}
+          ignorées car déjà présentes{% endif %}
+        </div>
       </div>
     </li>
     <li>
@@ -83,6 +87,10 @@
     <div class="recap-tile__label">Lignes intégrées</div>
     <div class="recap-tile__value">{{ rapport.lignes_integrees | nombre }}</div>
   </div>
+  <div class="recap-tile recap-tile--info">
+    <div class="recap-tile__label">Ignorées (déjà présentes)</div>
+    <div class="recap-tile__value">{{ rapport.lignes_ignorees | nombre }}</div>
+  </div>
   <div class="recap-tile recap-tile--warn">
     <div class="recap-tile__label">Lignes rejetées</div>
     <div class="recap-tile__value">{{ rapport.lignes_rejetees | nombre }}</div>
@@ -91,6 +99,14 @@
     <div class="recap-tile__label">Anomalie principale</div>
     <div class="recap-tile__value">{{ rapport.anomalie_principale }}</div>
   </div>
+
+  {% if rapport.lignes_ignorees > 0 %}
+  <div class="flash flash--warning" style="margin-top:6px">
+    {{ rapport.lignes_ignorees | nombre }} lignes étaient déjà présentes dans
+    l'entrepôt : elles ont été ignorées, pas réinsérées. C'est le mécanisme
+    d'idempotence — il garantit qu'un réimport ne fausse jamais les indicateurs.
+  </div>
+  {% endif %}
 
   {% if rapport.lignes_rejetees > 0 %}
   <div class="flash flash--warning" style="margin-top:6px">
@@ -118,6 +134,8 @@
           <th scope="col">Fichier</th>
           <th scope="col">Date</th>
           <th scope="col">Lues</th>
+          <th scope="col">Intégrées</th>
+          <th scope="col">Ignorées</th>
           <th scope="col">Rejetées</th>
           <th scope="col">Statut</th>
         </tr>
@@ -128,6 +146,8 @@
           <td class="col-strong">{{ h.nom_fichier }}</td>
           <td>{{ h.date_import.strftime('%d/%m/%Y %H:%M') }}</td>
           <td>{{ h.lignes_lues | nombre }}</td>
+          <td>{{ h.lignes_integrees | nombre }}</td>
+          <td>{{ h.lignes_ignorees | nombre }}</td>
           <td>{{ h.lignes_rejetees | nombre }}</td>
           <td>
             {% if h.statut == 'termine' %}

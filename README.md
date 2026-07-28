@@ -6,7 +6,57 @@ Auteur : Mohammed OUAHHABI
 
 ---
 
+<<<<<<< HEAD
+
 ## 1. Présentation
+
+=======
+
+## 🔗 Accès à l'application en ligne
+
+|                  |                                                   |
+| ---------------- | ------------------------------------------------- |
+| **URL publique** | **https://pilotage-pdv.onrender.com**             |
+| **Hébergement**  | Render (offre gratuite) + base PostgreSQL managée |
+
+### Comptes de démonstration
+
+Mot de passe commun : **`motdepasse123`**
+
+| Rôle                              | E-mail                        | Tableau de bord | Analyse | **Back-office** |
+| --------------------------------- | ----------------------------- | :-------------: | :-----: | :-------------: |
+| **Manager** (accès admin complet) | **`manager@pdv-nanterre.fr`** |       ✅        |   ✅    |       ✅        |
+| Assistant manager                 | `adjoint@pdv-nanterre.fr`     |       ✅        |   ✅    |       ✅        |
+| Premier équipier                  | `premier@pdv-nanterre.fr`     |       ✅        |   ✅    |       ❌        |
+| Équipier                          | `equipier@pdv-nanterre.fr`    |       ✅        |   ❌    |       ❌        |
+
+➡️ **Pour accéder au back-office d'administration**, connectez-vous avec le compte
+**Manager** ci-dessus, puis utilisez la section « Administration » de la barre
+latérale : _Utilisateurs & sources_ (gestion des comptes) et _Import de données_
+(pipeline). Le compte Manager donne également accès à la réinitialisation du jeu
+de démonstration.
+
+> ⏱️ **Première visite** : sur l'offre gratuite de Render, l'instance se met en
+> veille après ~15 minutes d'inactivité. Le premier chargement peut donc prendre
+> **30 à 60 secondes**, le temps du réveil. Les suivants sont immédiats.
+
+### Pour tester le pipeline d'import en ligne
+
+Depuis le compte Manager → **Import de données** → chargez l'un des fichiers du
+dossier `sample_data/` :
+
+| Fichier                         | Ce qu'il démontre                                                |
+| ------------------------------- | ---------------------------------------------------------------- |
+| `ventes_demo_juillet.csv`       | Import conforme — 186 lignes intégrées                           |
+| `ventes_sale.csv`               | Contrôles qualité — 25 lues, 14 intégrées, **11 rejetées**       |
+| `ventes_colonnes_exotiques.csv` | Correspondance de colonnes (noms différents, séparateur `;`)     |
+| _le même fichier deux fois_     | **Idempotence** — 0 intégrées, N ignorées, indicateurs inchangés |
+
+---
+
+## 1. Stack technique
+
+> > > > > > > bffea1f9a4d9862aa16ff945ed39d94eef93fe27
 
 **Pilotage PDV** est une application web décisionnelle destinée au pilotage de la performance d'un point de vente (cas d'application : Domino's Pizza, point de vente de Chatou). Elle consolide les données de commandes et de ventes via un pipeline de fiabilisation, puis les restitue aux responsables dans une interface exploitable au quotidien : tableau de bord d'indicateurs, analyse des ventes, alertes et prévision d'affluence.
 
@@ -18,18 +68,37 @@ Auteur : Mohammed OUAHHABI
 
 ## 2. Stack technique
 
-| Domaine | Technologies |
-|---|---|
-| Back-end | Python, Flask |
-| Base de données (ORM) | SQLAlchemy, Flask-Migrate |
-| Authentification | Flask-Login |
-| Traitement des données | pandas |
-| Front-end | Gabarits Jinja2 (HTML/CSS/JS), Chart.js |
-| Base de données | SQLite (développement), PostgreSQL (production) |
-| Serveur de production | Gunicorn |
-| Hébergement | Render |
-| Tests | pytest |
-| Versionnement | Git / GitHub |
+| Domaine                | Technologies                                    |
+| ---------------------- | ----------------------------------------------- |
+| Back-end               | Python, Flask                                   |
+| Base de données (ORM)  | SQLAlchemy, Flask-Migrate                       |
+| Authentification       | Flask-Login                                     |
+| Traitement des données | pandas                                          |
+| Front-end              | Gabarits Jinja2 (HTML/CSS/JS), Chart.js         |
+| Base de données        | SQLite (développement), PostgreSQL (production) |
+| Serveur de production  | Gunicorn                                        |
+| Hébergement            | Render                                          |
+| Tests                  | pytest                                          |
+| Versionnement          | Git / GitHub                                    |
+
+---
+
+## 2 bis. Contenu de l'archive livrée
+
+| Élément                           | Description                                                                     |
+| --------------------------------- | ------------------------------------------------------------------------------- |
+| `README.md`                       | Ce document : URL publique, accès back-office, installation, déploiement        |
+| `app/`                            | Code source de l'application (modèles, services, blueprints, templates, CSS/JS) |
+| `migrations/`                     | Migrations de schéma (Flask-Migrate / Alembic)                                  |
+| `scripts/`                        | Jeu de démonstration, amorçage au déploiement, export SQL                       |
+| `tests/`                          | 50 tests automatisés (pytest)                                                   |
+| `sample_data/`                    | Fichiers CSV pour démontrer le pipeline                                         |
+| `docs/`                           | Rédactionnel technique + `captures/` : 5 captures d'exécution                   |
+| **`dump.sql`**                    | **Export SQL complet de la base** (schéma + données de démonstration)           |
+| `requirements.txt`, `runtime.txt` | Dépendances et version de Python                                                |
+| `render.yaml`, `Procfile`         | Configuration de déploiement (Render, gunicorn)                                 |
+| `.env.example`                    | Modèle de configuration d'environnement                                         |
+| `pytest.ini`                      | Configuration des tests                                                         |
 
 ---
 
@@ -59,6 +128,7 @@ Auteur : Mohammed OUAHHABI
 ## 4. Installation et lancement en local
 
 ### Prérequis
+
 - Python 3.12
 - Git
 
@@ -101,12 +171,12 @@ Ces comptes sont créés automatiquement par le chargement des données de démo
 
 **Mot de passe commun :** `motdepasse123`
 
-| E-mail | Rôle | Accès |
-|---|---|---|
-| manager@pdv-nanterre.fr | Manager | Complet (dashboard, analyse, back-office, import) |
-| adjoint@pdv-nanterre.fr | Assistant manager | Complet |
-| premier@pdv-nanterre.fr | Premier équipier | Dashboard + analyse (lecture) |
-| equipier@pdv-nanterre.fr | Équipier | Dashboard (lecture) |
+| E-mail                   | Rôle              | Accès                                             |
+| ------------------------ | ----------------- | ------------------------------------------------- |
+| manager@pdv-nanterre.fr  | Manager           | Complet (dashboard, analyse, back-office, import) |
+| adjoint@pdv-nanterre.fr  | Assistant manager | Complet                                           |
+| premier@pdv-nanterre.fr  | Premier équipier  | Dashboard + analyse (lecture)                     |
+| equipier@pdv-nanterre.fr | Équipier          | Dashboard (lecture)                               |
 
 ### Créer un compte administrateur (Manager) manuellement
 
@@ -140,6 +210,7 @@ Des jeux de données de test sont fournis pour illustrer les trois cas (fichier 
 ## 8. Déploiement
 
 Le déploiement est décrit dans le fichier `render.yaml` (infrastructure as code). Sur Render, la création d'un « Blueprint » à partir de ce fichier crée automatiquement :
+
 - le service web (application Flask servie par Gunicorn) ;
 - une base de données PostgreSQL managée.
 

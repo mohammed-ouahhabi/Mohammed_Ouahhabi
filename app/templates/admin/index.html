@@ -89,4 +89,23 @@
   </div>
   {% endfor %}
 </div>
+
+{# --- Maintenance : réinitialisation du jeu de démonstration (manager) --- #}
+{% if current_user.role == 'manager' %}
+<div class="card">
+  <h2 class="card__title">Maintenance</h2>
+  <p class="subtitle" style="margin-bottom:14px">
+    Recharge un jeu de données de démonstration propre : l'historique des ventes
+    et des imports est remplacé. Utile avant une démonstration, ou pour repartir
+    d'indicateurs justes. Vous devrez vous reconnecter ensuite.
+  </p>
+  <form method="post" action="{{ url_for('admin.reinitialiser_demo') }}"
+        onsubmit="return confirm('Réinitialiser les données de démonstration ? Les ventes et imports actuels seront remplacés.');">
+    {{ suppression_form.hidden_tag() }}
+    <button class="btn btn--danger" type="submit">
+      {{ icone('refresh', 15) }} Réinitialiser les données de démonstration
+    </button>
+  </form>
+</div>
+{% endif %}
 {% endblock %}

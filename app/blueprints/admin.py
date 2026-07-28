@@ -15,6 +15,7 @@ from ..models import (
     ROLE_ASSISTANT,
     ROLE_LABELS,
 )
+from flask_login import logout_user
 
 bp = Blueprint("admin", __name__, url_prefix="/administration")
 
@@ -118,3 +119,29 @@ def supprimer_utilisateur(id_utilisateur):
     db.session.commit()
     flash("Utilisateur supprimé.", "success")
     return redirect(url_for("admin.index"))
+
+
+@bp.route("/reinitialiser-demo", methods=["POST"])
+@login_required
+@role_requis(ROLE_MANAGER)  # action sensible : réservée au manager
+def reinitialiser_demo():
+    """Repart d'un jeu de données de démonstration propre.
+
+    Utile avant une démonstration, et pour repartir sur des indicateurs justes
+    si des imports répétés ont faussé l'historique. Les comptes de démonstration
+    sont recréés à l'identique : la session courante est donc fermée et il faut
+    se reconnecter.
+    """
+    form = ConfirmationForm()
+    if not form.validate_on_submit():
+        abort(400)
+
+    from scripts.seed import executer_seed
+
+    executer_seed()
+    logout_user()
+    flash(
+        "Données de démonstration réinitialisées. Reconnectez-vous pour continuer.",
+        "success",
+    )
+    return redirect(url_for("auth.login"))
