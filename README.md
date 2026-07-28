@@ -171,12 +171,12 @@ Ces comptes sont créés automatiquement par le chargement des données de démo
 
 **Mot de passe commun :** `motdepasse123`
 
-| E-mail                   | Rôle              | Accès                                             |
-| ------------------------ | ----------------- | ------------------------------------------------- |
-| manager@pdv-nanterre.fr  | Manager           | Complet (dashboard, analyse, back-office, import) |
-| adjoint@pdv-nanterre.fr  | Assistant manager | Complet                                           |
-| premier@pdv-nanterre.fr  | Premier équipier  | Dashboard + analyse (lecture)                     |
-| equipier@pdv-nanterre.fr | Équipier          | Dashboard (lecture)                               |
+| E-mail                 | Rôle              | Accès                                             |
+| ---------------------- | ----------------- | ------------------------------------------------- |
+| manager@pdv-chatou.fr  | Manager           | Complet (dashboard, analyse, back-office, import) |
+| adjoint@pdv-chatou.fr  | Assistant manager | Complet                                           |
+| premier@pdv-chatou.fr  | Premier équipier  | Dashboard + analyse (lecture)                     |
+| equipier@pdv-chatou.fr | Équipier          | Dashboard (lecture)                               |
 
 ### Créer un compte administrateur (Manager) manuellement
 
