@@ -25,3 +25,6 @@ app/static/uploads/*
 .idea/
 .vscode/
 .history/
+
+# Archive de livraison (artefact généré)
+pilotage_pdv_livrable.zip
