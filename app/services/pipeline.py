@@ -34,12 +34,13 @@ from ..models import Commande, LigneCommande, Produit, ImportFichier, Vente
 # Champs du schéma cible (entrepôt) et leurs libellés d'affichage.
 CHAMPS_CIBLE = ["date", "produit", "quantite", "montant"]
 # Champs facultatifs : mappés s'ils sont présents, ignorés sinon (pas d'erreur).
-CHAMPS_OPTIONNELS = ["mode_paiement"]
+CHAMPS_OPTIONNELS = ["heure", "mode_paiement"]
 LIBELLES_CHAMPS = {
     "date": "Date",
     "produit": "Produit",
     "quantite": "Quantité",
     "montant": "Montant",
+    "heure": "Heure (si séparée de la date)",
     "mode_paiement": "Mode de paiement",
 }
 # Rétro-compatibilité (ancien nom de la constante).
@@ -56,14 +57,22 @@ ALIAS = {
     "produit": {
         "produit", "produits", "article", "item", "product", "libelle",
         "designation", "nomproduit", "pizza", "reference",
+        "nompizza", "nomarticle", "designationproduit",
     },
     "quantite": {
         "quantite", "quantites", "qte", "qty", "quantity", "nombre", "nb",
-        "volume",
+        "volume", "nbarticles",
     },
     "montant": {
         "montant", "montants", "prix", "amount", "total", "ca",
         "chiffreaffaires", "montantttc", "prixtotal", "montanteuros", "valeur",
+        "totalligne", "montantligne",
+    },
+    # Colonne d'heure séparée : fréquente dans les exports de caisse, où la date
+    # et l'heure figurent dans deux colonnes distinctes.
+    "heure": {
+        "heure", "heurecommande", "heurevente", "time", "ordertime",
+        "heureticket", "horaire",
     },
     "mode_paiement": {
         "modepaiement", "paiement", "reglement", "payment", "paymentmethod",
@@ -80,6 +89,9 @@ FORMATS_DATE = [
     "%d/%m/%Y %H:%M",
     "%d/%m/%Y",
 ]
+
+# Formats acceptés pour une colonne d'heure séparée.
+FORMATS_HEURE = ["%H:%M:%S", "%H:%M"]
 
 
 class ErreurFichier(Exception):
@@ -268,6 +280,48 @@ def _parser_date(valeur):
     return None
 
 
+def _parser_heure(valeur):
+    """Analyse une valeur d'heure isolée (HH:MM:SS ou HH:MM). None si invalide."""
+    if valeur is None:
+        return None
+    texte = str(valeur).strip()
+    if texte == "" or texte.lower() == "nan":
+        return None
+    for fmt in FORMATS_HEURE:
+        try:
+            return datetime.strptime(texte, fmt).time()
+        except ValueError:
+            continue
+    return None
+
+
+def _horodatage(valeur_date, valeur_heure=None):
+    """Recompose un horodatage à partir d'une date et, si besoin, d'une heure.
+
+    Beaucoup d'exports de caisse séparent la date (`2026-01-01`) et l'heure
+    (`11:38:36`) en deux colonnes. Sans recomposition, toutes les ventes d'une
+    même journée porteraient le même horodatage et seraient regroupées en une
+    seule commande — faussant le nombre de commandes, le panier moyen et les
+    pics horaires.
+
+    Règles :
+      - si la colonne date porte déjà une heure, elle fait foi (pas de double
+        heure) ;
+      - si l'heure est absente ou invalide, on conserve la date seule : l'heure
+        est une précision, pas une condition de validité.
+    """
+    base = _parser_date(valeur_date)
+    if base is None:
+        return None
+    # La présence de « : » signale que la date embarque déjà une heure.
+    if ":" in str(valeur_date):
+        return base
+    heure = _parser_heure(valeur_heure)
+    if heure is None:
+        return base
+    return base.replace(hour=heure.hour, minute=heure.minute, second=heure.second)
+
+
 def controler_qualite(df):
     """Étape 2 : contrôles qualité ligne à ligne.
 
@@ -286,9 +340,11 @@ def controler_qualite(df):
     lignes_valides = []
     vus = set()  # pour détecter les doublons (date, produit, quantite, montant)
     a_mode_paiement = "mode_paiement" in df.columns
+    a_heure = "heure" in df.columns
 
     for _, row in df.iterrows():
-        date_val = _parser_date(row["date"])
+        # Horodatage : recomposé si l'heure est fournie dans une colonne séparée.
+        date_val = _horodatage(row["date"], row["heure"] if a_heure else None)
         produit = str(row["produit"]).strip() if pd.notna(row["produit"]) else ""
 
         # a) valeurs manquantes
@@ -367,18 +423,32 @@ def _anomalie_principale(anomalies):
     return libelles[principale]
 
 
-def _produit_ou_creer(cache, nom):
-    """Récupère un produit par nom (insensible à la casse) ou le crée."""
-    cle = nom.lower()
-    if cle in cache:
-        return cache[cle]
-    produit = Produit.query.filter(func.lower(Produit.nom) == cle).first()
-    if produit is None:
+def _resoudre_produits(noms):
+    """Récupère (ou crée) tous les produits en une seule passe.
+
+    Résoudre les produits en amont évite une requête par ligne : sur un fichier
+    de plusieurs milliers de lignes, la différence est décisive.
+    Renvoie un dictionnaire {nom en minuscules: Produit}.
+    """
+    cache = {}
+    voulus = {nom.lower(): nom for nom in noms}
+    if not voulus:
+        return cache
+
+    existants = (
+        Produit.query.filter(func.lower(Produit.nom).in_(list(voulus))).all()
+    )
+    for produit in existants:
+        cache[produit.nom.lower()] = produit
+
+    manquants = [nom for cle, nom in voulus.items() if cle not in cache]
+    for nom in manquants:
         produit = Produit(nom=nom, categorie=None, prix_unitaire=0)
         db.session.add(produit)
-        db.session.flush()  # obtient l'id sans commit complet
-    cache[cle] = produit
-    return produit
+        cache[nom.lower()] = produit
+    if manquants:
+        db.session.flush()  # attribue les identifiants des nouveaux produits
+    return cache
 
 
 def integrer(lignes_valides, point_de_vente_id):
@@ -409,13 +479,17 @@ def integrer(lignes_valides, point_de_vente_id):
     if not nouvelles:
         return 0, ignorees
 
-    # 3. Intégration des seules lignes nouvelles.
-    cache_produits = {}
+    # 3. Résolution de tous les produits en amont (une seule requête).
+    cache_produits = _resoudre_produits({ligne["produit"] for _, ligne in nouvelles})
+
+    # 4. Construction des commandes, lignes et ventes.
+    # On passe par les relations SQLAlchemy plutôt que par les identifiants :
+    # aucun flush intermédiaire n'est nécessaire, tout part en un seul commit.
     commandes = {}  # date_heure -> Commande
     modes = {}      # date_heure -> mode de paiement retenu pour la commande
 
     for cle, ligne in nouvelles:
-        produit = _produit_ou_creer(cache_produits, ligne["produit"])
+        produit = cache_produits[ligne["produit"].lower()]
 
         cle_cmd = ligne["date"]
         commande = commandes.get(cle_cmd)
@@ -426,7 +500,6 @@ def integrer(lignes_valides, point_de_vente_id):
                 montant_total=0,
             )
             db.session.add(commande)
-            db.session.flush()
             commandes[cle_cmd] = commande
 
         # Mode de paiement au niveau du ticket : on retient la 1re valeur non vide.
@@ -435,7 +508,7 @@ def integrer(lignes_valides, point_de_vente_id):
 
         commande.lignes.append(
             LigneCommande(
-                produit_id=produit.id_produit,
+                produit=produit,
                 quantite=ligne["quantite"],
                 montant=ligne["montant"],
                 cle_idempotence=cle,
@@ -447,7 +520,7 @@ def integrer(lignes_valides, point_de_vente_id):
     for cle_cmd, commande in commandes.items():
         db.session.add(
             Vente(
-                commande_id=commande.id_commande,
+                commande=commande,
                 montant=commande.montant_total,
                 date_vente=commande.date_heure,
                 mode_paiement=modes.get(cle_cmd),
