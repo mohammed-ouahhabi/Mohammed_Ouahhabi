@@ -3296,7 +3296,9 @@ CREATE TABLE import_fichier (
 	date_import DATETIME NOT NULL, 
 	lignes_lues INTEGER NOT NULL, 
 	lignes_rejetees INTEGER NOT NULL, 
-	statut VARCHAR(40) NOT NULL, lignes_ignorees INTEGER DEFAULT '0' NOT NULL, hash_fichier VARCHAR(64), 
+	lignes_ignorees INTEGER NOT NULL, 
+	hash_fichier VARCHAR(64), 
+	statut VARCHAR(40) NOT NULL, 
 	PRIMARY KEY (id_import), 
 	FOREIGN KEY(utilisateur_id) REFERENCES utilisateur (id_utilisateur)
 );
@@ -3315,7 +3317,8 @@ CREATE TABLE ligne_commande (
 	commande_id INTEGER NOT NULL, 
 	produit_id INTEGER NOT NULL, 
 	quantite INTEGER NOT NULL, 
-	montant NUMERIC(10, 2) NOT NULL, cle_idempotence VARCHAR(64), 
+	montant NUMERIC(10, 2) NOT NULL, 
+	cle_idempotence VARCHAR(64), 
 	PRIMARY KEY (id_ligne_commande), 
 	FOREIGN KEY(commande_id) REFERENCES commande (id_commande), 
 	FOREIGN KEY(produit_id) REFERENCES produit (id_produit)
@@ -9886,11 +9889,11 @@ CREATE TABLE utilisateur (
 	PRIMARY KEY (id_utilisateur), 
 	FOREIGN KEY(point_de_vente_id) REFERENCES point_de_vente (id_point_de_vente)
 );
-INSERT INTO "utilisateur" VALUES(1,1,'Ahmed O.','manager@pdv-chatou.fr','manager',1,'scrypt:32768:8:1$WvYdhE9LAOwYCo5C$7a151052f07977bfd30b0d69745c467edfa320cb59fc9784ad1ea4c07788e0ba8eda71915a9317ce2d44ca1109a5b984d6ecabec6d0e8651fb42ef0f09c1ef9f');
-INSERT INTO "utilisateur" VALUES(2,1,'Responsable Chatou','responsable@pdv-chatou.fr','manager',1,'scrypt:32768:8:1$u4Wk0p2Pm1WyGltP$cf37882c73d0b7356ce0fcc76d8fed54a1e4856a72763d1f1a16c6ce09c170b7879dbff28b4ba55ddba9326cb3e17bbed4daf14226aa2d9d0bad0b0d346f5a79');
-INSERT INTO "utilisateur" VALUES(3,1,'Adjoint Chatou','adjoint@pdv-chatou.fr','assistant',1,'scrypt:32768:8:1$HaUKwP6ktV1mVOok$998a18b1c3939462400b23a76e6b4da4aa2e7e6f844e93be016f3072a1b6df9de43c6fe2c10275348726b40b32865a8dacd7b04693da4bd6b29c6d33e23e4216');
-INSERT INTO "utilisateur" VALUES(4,1,'Premier équipier','premier@pdv-chatou.fr','premier_equipier',1,'scrypt:32768:8:1$eMH6UCJQJpbrRIm2$8ba23efebb7b27fcb9cd7233791a3fc8249ff23a2ff97dd827442f2210aa025df6f92a1dffbd12773a6759cc65addc5c4f4543dc4cb5f7ed5adbe623428787b7');
-INSERT INTO "utilisateur" VALUES(5,1,'Équipier','equipier@pdv-chatou.fr','equipier',1,'scrypt:32768:8:1$e9nigq6tvVwKvNEW$b24f3d2f38541ebb0c4353814e6284dddbdce6e89d0c3a9d0d4dafa8817338de9c069ed1ba797d76ba55032808d51ca6b0dee95c31ccac21bb77cde2cfbe3ba7');
+INSERT INTO "utilisateur" VALUES(1,1,'Ahmed O.','manager@pdv-chatou.fr','manager',1,'scrypt:32768:8:1$xh3KT3KAE1H5rsDJ$fadcb51f4940747e1ff6f80331741c12cfaa4a1fcfd071032fe0779d9098b4e0f8d9037cc83ac68deaeeb8ef285230cd83a220907dd83f9e192e68e8ed5a71e0');
+INSERT INTO "utilisateur" VALUES(2,1,'Responsable Chatou','responsable@pdv-chatou.fr','manager',1,'scrypt:32768:8:1$0q8RD3bNdOZ6Hdvt$d0653c020a2362ff10c131a4c3ba01539117223ef291de9172f6a5b1deb9648172f79d405e3fef0c6e922d158f980e9644583e4691dc0827935afe91dbb210fa');
+INSERT INTO "utilisateur" VALUES(3,1,'Adjoint Chatou','adjoint@pdv-chatou.fr','assistant',1,'scrypt:32768:8:1$9oSZcZEfmiPioTum$02d76c67e5b2508f89bee792919973cdecd14cf4ccd6dfd1b61351a894f7ca89461d3689ec375456f69e1e52d60f76aaf61a1a2a132770cc8f1003c4705cd959');
+INSERT INTO "utilisateur" VALUES(4,1,'Premier équipier','premier@pdv-chatou.fr','premier_equipier',1,'scrypt:32768:8:1$EyVRCE9R3bDnSfCV$217df44350b271a95cc1645d4167b252b6c26f9d2b23a5489f75db313d323059de282050d412572c9e05ec8bbeebaa49ce125b5dc061e65945b9495ae64772b1');
+INSERT INTO "utilisateur" VALUES(5,1,'Équipier','equipier@pdv-chatou.fr','equipier',1,'scrypt:32768:8:1$hrCxY2qKVWvNUcfy$1dd66bbccdb18723b291ca78ff9a6d209af4f013c5a6cc48c4cc65e78c334adfe961ea4580dd504dc55f5b4b8ce81c18f83a8699ea74f76c638dc5d1ba0ed4e4');
 CREATE TABLE vente (
 	id_vente INTEGER NOT NULL, 
 	commande_id INTEGER NOT NULL, 
@@ -13177,9 +13180,9 @@ INSERT INTO "vente" VALUES(3274,3274,15.9,'Carte','2026-07-29 20:02:00.000000');
 INSERT INTO "vente" VALUES(3275,3275,15.9,'Espèces','2026-07-29 11:02:00.000000');
 INSERT INTO "vente" VALUES(3276,3276,44.3,'Carte','2026-07-29 21:58:00.000000');
 INSERT INTO "vente" VALUES(3277,3277,30.3,'Carte','2026-07-29 20:22:00.000000');
-CREATE INDEX ix_commande_date_heure ON commande (date_heure);
 CREATE UNIQUE INDEX ix_utilisateur_email ON utilisateur (email);
-CREATE INDEX ix_import_fichier_hash_fichier ON import_fichier (hash_fichier);
+CREATE INDEX ix_commande_date_heure ON commande (date_heure);
 CREATE UNIQUE INDEX ix_ligne_commande_cle_idempotence ON ligne_commande (cle_idempotence);
 CREATE UNIQUE INDEX ix_import_temporaire_jeton ON import_temporaire (jeton);
+CREATE INDEX ix_import_fichier_hash_fichier ON import_fichier (hash_fichier);
 COMMIT;

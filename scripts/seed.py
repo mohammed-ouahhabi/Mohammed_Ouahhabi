@@ -160,4 +160,13 @@ if __name__ == "__main__":
     app = create_app()
     with app.app_context():
         db.create_all()
+        # `create_all` crée les tables d'après les modèles, sans passer par les
+        # migrations : la base ne sait alors pas où elle en est, et un
+        # `flask db upgrade` ultérieur échoue en tentant de recréer l'existant.
+        # On l'aligne donc sur la dernière révision — uniquement si aucune n'est
+        # enregistrée, pour ne jamais masquer une base réellement en retard.
+        from sqlalchemy import inspect
+        if "alembic_version" not in inspect(db.engine).get_table_names():
+            from flask_migrate import stamp
+            stamp()
         executer_seed()
