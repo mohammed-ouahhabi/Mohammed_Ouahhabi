@@ -57,6 +57,17 @@ catalogues, connecteurs SaaS) : elle rend la solution **indépendante du format
 d'export** et donc réellement déployable sur l'ensemble d'un parc de magasins,
 sans redéveloppement pour chaque nouvelle source.
 
+**Recomposition de l'horodatage.** Certains exports de caisse séparent la date
+(`2026-01-01`) et l'heure (`11:38:36`) en deux colonnes distinctes. Le connecteur
+accepte donc une colonne « heure » facultative et **recompose l'horodatage
+complet** avant l'analyse. L'enjeu est loin d'être cosmétique : les lignes étant
+regroupées en commandes par horodatage, une date sans heure agrégerait toutes les
+ventes d'une journée en une seule commande — faussant le nombre de commandes, le
+panier moyen et les pics horaires. Deux garde-fous accompagnent la règle : si la
+colonne date porte déjà une heure, elle fait foi (pas de double heure) ; si
+l'heure est absente ou illisible sur une ligne, la date seule est conservée —
+l'heure est une précision, pas une condition de validité.
+
 ## 4. La gouvernance : contrôles qualité et traçabilité
 
 La donnée n'est jamais chargée telle quelle. Avant l'intégration, chaque ligne

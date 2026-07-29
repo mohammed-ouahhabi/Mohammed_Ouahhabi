@@ -6,11 +6,11 @@ Auteur : Mohammed OUAHHABI
 
 ---
 
-<<<<<<< HEAD
-
 ## 1. Présentation
 
-=======
+**Pilotage PDV** est une application web décisionnelle destinée au pilotage de la performance d'un point de vente (cas d'application : Domino's Pizza, point de vente de Chatou). Elle consolide les données de commandes et de ventes via un pipeline de fiabilisation, puis les restitue aux responsables dans une interface exploitable au quotidien : tableau de bord d'indicateurs, analyse des ventes, alertes et prévision d'affluence.
+
+---
 
 ## 🔗 Accès à l'application en ligne
 
@@ -50,19 +50,8 @@ dossier `sample_data/` :
 | `ventes_demo_juillet.csv`       | Import conforme — 186 lignes intégrées                           |
 | `ventes_sale.csv`               | Contrôles qualité — 25 lues, 14 intégrées, **11 rejetées**       |
 | `ventes_colonnes_exotiques.csv` | Correspondance de colonnes (noms différents, séparateur `;`)     |
+| `ventes_dominos_T1_2026.csv`    | Volume réel — 12 234 lignes, 5 370 commandes (≈ 5 s de traitement) |
 | _le même fichier deux fois_     | **Idempotence** — 0 intégrées, N ignorées, indicateurs inchangés |
-
----
-
-## 1. Stack technique
-
-> > > > > > > bffea1f9a4d9862aa16ff945ed39d94eef93fe27
-
-**Pilotage PDV** est une application web décisionnelle destinée au pilotage de la performance d'un point de vente (cas d'application : Domino's Pizza, point de vente de Chatou). Elle consolide les données de commandes et de ventes via un pipeline de fiabilisation, puis les restitue aux responsables dans une interface exploitable au quotidien : tableau de bord d'indicateurs, analyse des ventes, alertes et prévision d'affluence.
-
-**Application déployée (URL publique) :** https://pilotage-pdv.onrender.com
-
-> Remarque : l'application est hébergée sur une offre gratuite. Après une période d'inactivité, la première ouverture peut nécessiter un court délai de réveil (quelques dizaines de secondes).
 
 ---
 
@@ -91,7 +80,7 @@ dossier `sample_data/` :
 | `app/`                            | Code source de l'application (modèles, services, blueprints, templates, CSS/JS) |
 | `migrations/`                     | Migrations de schéma (Flask-Migrate / Alembic)                                  |
 | `scripts/`                        | Jeu de démonstration, amorçage au déploiement, export SQL                       |
-| `tests/`                          | 50 tests automatisés (pytest)                                                   |
+| `tests/`                          | 55 tests automatisés (pytest)                                                   |
 | `sample_data/`                    | Fichiers CSV pour démontrer le pipeline                                         |
 | `docs/`                           | Rédactionnel technique + `captures/` : 5 captures d'exécution                   |
 | **`dump.sql`**                    | **Export SQL complet de la base** (schéma + données de démonstration)           |
@@ -114,7 +103,7 @@ dossier `sample_data/` :
 │   └── templates/           # Gabarits Jinja2 (5 écrans + partials)
 ├── migrations/              # Migrations de base (Flask-Migrate)
 ├── scripts/                 # seed.py (données de démo), bootstrap.py, generer_dump.sh
-├── tests/                   # Suite de tests pytest (43 tests)
+├── tests/                   # Suite de tests pytest (55 tests)
 ├── render.yaml              # Configuration de déploiement (infrastructure as code)
 ├── Procfile                 # Commande de démarrage
 ├── runtime.txt              # Version de Python (3.12.5)
@@ -188,7 +177,7 @@ flask creer-admin --email vous@example.com --nom "Votre Nom"
 
 ## 6. Tests
 
-La suite de tests (43 tests) couvre les indicateurs, le pipeline d'import, les accès par rôle, l'administration et la couche décision.
+La suite de tests (55 tests) couvre les indicateurs, le pipeline d'import, les accès par rôle, l'administration et la couche décision.
 
 ```bash
 pytest
