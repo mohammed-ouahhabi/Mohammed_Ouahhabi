@@ -61,6 +61,18 @@ def _enregistrer_gestionnaires_erreurs(app):
     def fichier_trop_gros(_):
         return render_template("erreurs/413.html"), 413
 
+    # Base injoignable ou schéma non migré : plutôt qu'une erreur 500 opaque,
+    # on explique la cause la plus fréquente et la commande qui la corrige.
+    from sqlalchemy.exc import OperationalError, ProgrammingError
+
+    @app.errorhandler(OperationalError)
+    @app.errorhandler(ProgrammingError)
+    def base_indisponible(erreur):
+        db.session.rollback()
+        # Le détail technique n'est montré qu'en développement.
+        detail = str(getattr(erreur, "orig", erreur)) if app.config.get("DEBUG") else None
+        return render_template("erreurs/base_donnees.html", detail=detail), 500
+
 
 def _enregistrer_contexte_templates(app):
     """Rend certaines constantes/utilitaires disponibles dans tous les templates."""

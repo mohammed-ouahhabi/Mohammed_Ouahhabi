@@ -152,6 +152,11 @@ flask run
 
 L'application est alors accessible à l'adresse : http://127.0.0.1:5000
 
+> ⚠️ **Après chaque récupération de code (`git pull`)**, relancez
+> `flask db upgrade` avant de démarrer l'application. Si le schéma de la base a
+> évolué et que les migrations ne sont pas appliquées, les écrans concernés
+> affichent une page d'erreur explicite rappelant cette commande.
+
 ---
 
 ## 5. Comptes de démonstration

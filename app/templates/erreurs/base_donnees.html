@@ -1,0 +1,46 @@
+{# Page autonome : elle ne dépend ni de la barre latérale ni de l'utilisateur
+   connecté, car le chargement de celui-ci passe par la base — indisponible ici. #}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Base de données indisponible — Pilotage PDV</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <main class="content" id="contenu-principal" style="max-width:760px;margin:0 auto">
+    <div class="card prose" style="margin-top:48px">
+      <h1>La base de données n'est pas à jour</h1>
+
+      <p>
+        L'application a demandé à la base une information que celle-ci ne connaît
+        pas encore. Cela signifie presque toujours que <strong>le code a évolué
+        mais que les migrations n'ont pas été appliquées</strong> — par exemple
+        après avoir récupéré une nouvelle version du projet.
+      </p>
+
+      <h2>Comment corriger</h2>
+      <p>Depuis le dossier du projet, l'environnement virtuel activé :</p>
+      <pre style="background:#f1f5f9;padding:14px;border-radius:8px;overflow-x:auto"><code>flask db upgrade</code></pre>
+      <p>
+        Puis relancez l'application. Si le problème persiste, vérifiez que la
+        variable <code>FLASK_APP</code> vaut bien <code>wsgi.py</code>.
+      </p>
+
+      <h2>Autres causes possibles</h2>
+      <ul>
+        <li>Le serveur de base de données est momentanément injoignable.</li>
+        <li>La variable <code>DATABASE_URL</code> pointe vers une base inexistante.</li>
+      </ul>
+
+      {% if detail %}
+      <h2>Détail technique</h2>
+      <pre style="background:#fbe7e4;color:#b23b2c;padding:14px;border-radius:8px;overflow-x:auto"><code>{{ detail }}</code></pre>
+      {% endif %}
+
+      <p style="margin-top:24px"><a href="{{ url_for('auth.login') }}">Retour à la connexion</a></p>
+    </div>
+  </main>
+</body>
+</html>
