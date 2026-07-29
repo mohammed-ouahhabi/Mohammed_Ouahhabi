@@ -117,6 +117,40 @@ def test_heure_vide_ou_invalide_conserve_la_date_sans_rejet(app, db):
         os.remove(chemin)
 
 
+def test_meme_colonne_pour_date_et_heure_est_ignoree(app):
+    """Cas réel : le fichier n'a pas de colonne d'heure et l'utilisateur choisit
+    la colonne de date pour le champ « Heure ». L'information y est déjà lue :
+    le champ facultatif est ignoré, sans planter."""
+    chemin = _ecrire(
+        "date_heure,produit,quantite,montant\n"
+        "2026-01-01 11:38:36,Reine,1,13.90\n"
+    )
+    try:
+        mapping = {
+            "date": "date_heure", "produit": "produit",
+            "quantite": "quantite", "montant": "montant",
+            "heure": "date_heure",     # même colonne que Date
+        }
+        df = pipeline.lire_avec_mapping(chemin, mapping)
+        assert list(df.columns) == pipeline.CHAMPS_CIBLE
+    finally:
+        os.remove(chemin)
+
+
+def test_colonne_partagee_entre_champs_obligatoires_message_clair(app):
+    """Deux champs obligatoires sur la même colonne : erreur explicite,
+    jamais un plantage technique."""
+    import pytest
+    chemin = _ecrire("a,b,c\n2026-01-01,Reine,1\n")
+    try:
+        mapping = {"date": "a", "produit": "b", "quantite": "c", "montant": "c"}
+        with pytest.raises(pipeline.ErreurFichier) as exc:
+            pipeline.lire_avec_mapping(chemin, mapping)
+        assert "plusieurs champs" in str(exc.value)
+    finally:
+        os.remove(chemin)
+
+
 def test_horodatage_unitaire(app):
     """Règles de recomposition, isolées de tout accès base."""
     # date seule + heure -> recomposition

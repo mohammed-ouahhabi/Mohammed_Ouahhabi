@@ -243,14 +243,31 @@ def lire_avec_mapping(chemin, mapping):
             "Colonnes introuvables dans le fichier : " + ", ".join(manquantes) + "."
         )
 
+    # Une même colonne source ne peut pas alimenter deux champs obligatoires :
+    # on le signale clairement plutôt que de laisser planter le traitement.
+    doublons = [
+        col for col in {mapping[c] for c in CHAMPS_CIBLE}
+        if [mapping[c] for c in CHAMPS_CIBLE].count(col) > 1
+    ]
+    if doublons:
+        raise ErreurFichier(
+            "La colonne « " + doublons[0] + " » est associée à plusieurs champs. "
+            "Chaque champ doit correspondre à une colonne différente."
+        )
+
     # Renomme colonne_source -> champ_cible pour les champs obligatoires...
     inverse = {mapping[champ]: champ for champ in CHAMPS_CIBLE}
     colonnes_gardees = list(CHAMPS_CIBLE)
+    utilisees = set(inverse)
     # ... puis pour les champs facultatifs réellement présents dans le fichier.
+    # Un champ facultatif pointant vers une colonne déjà utilisée est ignoré :
+    # l'information y est déjà lue (cas typique d'une colonne « date_heure »
+    # choisie à la fois comme Date et comme Heure).
     for opt in CHAMPS_OPTIONNELS:
         src = mapping.get(opt)
-        if src and src in df.columns:
+        if src and src in df.columns and src not in utilisees:
             inverse[src] = opt
+            utilisees.add(src)
             colonnes_gardees.append(opt)
 
     df = df.rename(columns=inverse)
