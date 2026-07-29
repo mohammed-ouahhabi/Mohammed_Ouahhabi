@@ -43,7 +43,43 @@ temporelles) est mentionné comme **évolution future** — il exigerait davanta
 données, un entraînement et une justification de sa complexité, sans garantie de
 gain pour ce cas d'usage.
 
-## 3. Ce que cette couche démontre
+## 3. Les opportunités promotionnelles — de l'alerte à l'action
+
+Les deux premières briques signalent : l'une ce qui a dévié, l'autre ce qui
+s'annonce. La troisième va un cran plus loin : elle propose **des actions
+commerciales chiffrées**, organisées selon trois questions que se pose un
+responsable de point de vente.
+
+| Question | Analyse | Règle |
+|---|---|---|
+| **Quand** agir ? | Créneaux en retrait | un créneau dont le CA est inférieur à 60 % de la moyenne horaire, sur un volume significatif |
+| **Quoi** pousser ? | Produits en retrait | un produit vendu au moins dix fois dont la part de CA est inférieure à 60 % de la part moyenne |
+| **Comment** ? | Produits associés | les paires de produits les plus souvent achetées dans une même commande |
+
+Chaque recommandation est accompagnée des chiffres qui la fondent : le manque à
+gagner estimé pour un créneau, la part de chiffre d'affaires pour un produit, le
+panier moyen des commandes concernées pour une association — comparé au panier
+global, afin de distinguer les associations qui font réellement monter le ticket.
+
+Deux graphiques rendent l'écart visible plutôt que seulement lisible : le
+chiffre d'affaires par heure et la part de chaque produit, avec dans les deux cas
+la moyenne tracée en repère et les éléments en retrait signalés.
+
+**Aucun apprentissage automatique là non plus.** Chaque règle s'énonce en une
+phrase et se vérifie à la main. C'est un choix assumé : une recommandation qu'un
+responsable ne peut pas comprendre est une recommandation qu'il n'appliquera pas.
+C'est aussi ce qui rend la brique testable — chaque règle est couverte par des
+tests aux résultats connus d'avance.
+
+**Limites explicitées à l'écran.** Ces pistes signalent des écarts, elles ne les
+expliquent pas : un créneau creux peut relever d'une fermeture, d'un effectif
+réduit ou d'une réalité de quartier. Elles se lisent comme un point de départ à
+confronter au terrain. Par ailleurs, l'application ne dispose d'aucun historique
+de promotions passées : elle ne peut donc pas mesurer l'effet d'une opération
+déjà menée. Ce serait l'évolution la plus utile — enregistrer les promotions et
+comparer les périodes.
+
+## 4. Ce que cette couche démontre
 
 - La plateforme passe du **constat** (reporting) à l'**aide à la décision**.
 - Les deux briques sont **explicables** : des seuils clairs pour les alertes, une

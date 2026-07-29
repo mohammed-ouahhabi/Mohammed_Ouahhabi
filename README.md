@@ -8,7 +8,7 @@ Auteur : Mohammed OUAHHABI
 
 ## 1. Présentation
 
-**Pilotage PDV** est une application web décisionnelle destinée au pilotage de la performance d'un point de vente (cas d'application : Domino's Pizza, point de vente de Chatou). Elle consolide les données de commandes et de ventes via un pipeline de fiabilisation, puis les restitue aux responsables dans une interface exploitable au quotidien : tableau de bord d'indicateurs, analyse des ventes, alertes et prévision d'affluence.
+**Pilotage PDV** est une application web décisionnelle destinée au pilotage de la performance d'un point de vente (cas d'application : Domino's Pizza, point de vente de Chatou). Elle consolide les données de commandes et de ventes via un pipeline de fiabilisation, puis les restitue aux responsables dans une interface exploitable au quotidien : tableau de bord d'indicateurs, analyse des ventes, alertes, prévision d'affluence et opportunités promotionnelles.
 
 ---
 
@@ -80,9 +80,9 @@ dossier `sample_data/` :
 | `app/`                            | Code source de l'application (modèles, services, blueprints, templates, CSS/JS) |
 | `migrations/`                     | Migrations de schéma (Flask-Migrate / Alembic)                                  |
 | `scripts/`                        | Jeu de démonstration, amorçage au déploiement, export SQL                       |
-| `tests/`                          | 55 tests automatisés (pytest)                                                   |
+| `tests/`                          | 66 tests automatisés (pytest)                                                   |
 | `sample_data/`                    | Fichiers CSV pour démontrer le pipeline                                         |
-| `docs/`                           | Rédactionnel technique + `captures/` : 5 captures d'exécution                   |
+| `docs/`                           | Rédactionnel technique + `captures/` : 6 captures d'exécution                   |
 | **`dump.sql`**                    | **Export SQL complet de la base** (schéma + données de démonstration)           |
 | `requirements.txt`, `runtime.txt` | Dépendances et version de Python                                                |
 | `render.yaml`, `Procfile`         | Configuration de déploiement (Render, gunicorn)                                 |
@@ -99,11 +99,11 @@ dossier `sample_data/` :
 │   ├── __init__.py          # Application factory
 │   ├── models.py            # Modèles de données (7 tables)
 │   ├── blueprints/          # Modules : auth, dashboard, ventes, admin, imports, legal
-│   ├── services/            # Logique métier : kpi, pipeline, alertes, prevision
-│   └── templates/           # Gabarits Jinja2 (5 écrans + partials)
+│   ├── services/            # Logique métier : kpi, pipeline, alertes, prevision, opportunites
+│   └── templates/           # Gabarits Jinja2 (6 écrans + partials)
 ├── migrations/              # Migrations de base (Flask-Migrate)
 ├── scripts/                 # seed.py (données de démo), bootstrap.py, generer_dump.sh
-├── tests/                   # Suite de tests pytest (55 tests)
+├── tests/                   # Suite de tests pytest (66 tests)
 ├── render.yaml              # Configuration de déploiement (infrastructure as code)
 ├── Procfile                 # Commande de démarrage
 ├── runtime.txt              # Version de Python (3.12.5)
@@ -182,7 +182,7 @@ flask creer-admin --email vous@example.com --nom "Votre Nom"
 
 ## 6. Tests
 
-La suite de tests (55 tests) couvre les indicateurs, le pipeline d'import, les accès par rôle, l'administration et la couche décision.
+La suite de tests (66 tests) couvre les indicateurs, le pipeline d'import, les accès par rôle, l'administration et la couche décision.
 
 ```bash
 pytest

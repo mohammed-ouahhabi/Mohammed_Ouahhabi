@@ -142,6 +142,30 @@ ou en § 16.3 comme second exemple de correctif.
 
 ---
 
+## 3 ter. AJOUT — L'écran « Opportunités promotionnelles »
+
+Nouvelle brique développée après la rédaction : à décrire en Partie 2, aux côtés
+des alertes et de la prévision.
+
+> **Des écarts aux actions.** Une troisième brique décisionnelle propose des
+> actions commerciales chiffrées, organisées selon trois questions : quand agir
+> (créneaux dont le chiffre d'affaires est nettement sous la moyenne horaire),
+> quoi pousser (produits dont la part de chiffre d'affaires est en retrait), et
+> quelles formules créer (paires de produits les plus souvent achetées ensemble).
+> Chaque proposition est accompagnée des chiffres qui la fondent — manque à
+> gagner estimé, part de chiffre d'affaires, panier moyen des commandes
+> concernées comparé au panier global.
+>
+> Comme la prévision, cette brique repose sur des règles explicites et non sur un
+> apprentissage automatique. Une recommandation qu'un responsable ne peut pas
+> comprendre est une recommandation qu'il n'appliquera pas ; c'est aussi ce qui
+> rend chaque règle testable, avec des résultats connus d'avance. Les limites
+> sont affichées à l'écran : ces pistes signalent des écarts sans les expliquer,
+> et l'application ne conservant aucun historique de promotions, elle ne peut pas
+> mesurer l'effet d'une opération déjà menée.
+
+---
+
 ## 4. À TRANCHER — Incohérence Nanterre / Chatou
 
 **Le risque le plus visible pour le jury.**

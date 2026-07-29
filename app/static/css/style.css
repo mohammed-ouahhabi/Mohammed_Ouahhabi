@@ -396,6 +396,50 @@ select { appearance: none; background-image: none; }
 .alerte__titre { font-weight: 700; color: var(--navy); font-size: 14.5px; }
 .alerte__message { color: #475569; font-size: 13px; }
 
+/* Fil conducteur : les trois questions, dans l'ordre */
+.fil {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; align-items: center; flex-wrap: wrap; gap: 10px;
+}
+.fil__etape { display: flex; align-items: center; gap: 9px; }
+.fil__texte { font-size: 14px; color: #475569; }
+.fil__texte strong { color: var(--navy); }
+.fil__fleche { color: var(--slate-300); font-size: 18px; }
+.fil__num {
+  width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+  background: var(--green); color: #fff;
+  display: inline-grid; place-items: center;
+  font-size: 12.5px; font-weight: 700;
+}
+.fil__num--titre { vertical-align: middle; margin-right: 6px; }
+
+/* Légende des graphiques d'opportunités */
+.legende {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px 18px;
+  color: var(--muted); font-size: 12.5px; margin: 0;
+}
+.puce { width: 11px; height: 11px; border-radius: 3px; display: inline-block; margin-right: 4px; }
+.puce--vert { background: var(--green-mid); }
+.puce--rouge { background: #e0705f; }
+.puce--trait {
+  height: 0; width: 16px; border-top: 2px dashed var(--navy);
+  border-radius: 0; position: relative; top: -3px;
+}
+
+/* Opportunités promotionnelles : constat chiffré + piste d'action */
+.oppo {
+  border-left: 3px solid var(--green);
+  padding: 2px 0 2px 14px;
+  margin-bottom: 18px;
+}
+.oppo:last-child { margin-bottom: 0; }
+.oppo__titre { font-weight: 700; color: var(--navy); font-size: 15px; }
+.oppo__constat { color: #475569; font-size: 13.5px; margin: 4px 0 0; }
+.oppo__action {
+  color: var(--navy); font-size: 13.5px; margin: 8px 0 0;
+  background: var(--green-light); padding: 10px 12px; border-radius: var(--radius-sm);
+}
+
 /* Chart containers */
 .chart-box { position: relative; height: 220px; }
 .chart-box--tall { height: 260px; }

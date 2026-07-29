@@ -16,7 +16,7 @@ from ..models import (
     ROLE_ASSISTANT,
     ROLE_PREMIER_EQUIPIER,
 )
-from ..services import kpi, prevision
+from ..services import kpi, prevision, opportunites
 
 bp = Blueprint("ventes", __name__)
 
@@ -104,6 +104,20 @@ def export():
         sortie.getvalue(),
         mimetype="text/csv",
         headers={"Content-Disposition": f"attachment; filename={nom}"},
+    )
+
+
+@bp.route("/opportunites")
+@login_required
+@ACCES_ANALYSE
+def opportunites_promotionnelles():
+    """Opportunités promotionnelles : des actions commerciales chiffrées,
+    déduites des ventes. Même niveau d'accès que l'analyse des ventes."""
+    resultat = opportunites.analyser(current_user.point_de_vente_id, jours=90)
+    return render_template(
+        "ventes/opportunites.html",
+        resultat=resultat,
+        point_de_vente=current_user.point_de_vente,
     )
 
 

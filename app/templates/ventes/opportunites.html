@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+{% from "partials/icons.html" import icone %}
+{% block title %}Opportunités — Pilotage PDV{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Opportunités promotionnelles</h1>
+    <p class="subtitle">Point de vente : {{ point_de_vente.nom if point_de_vente else '—' }}</p>
+  </div>
+  <div class="page-header__actions">
+    <span class="badge badge--grey">{{ resultat.periode.jours }} derniers jours</span>
+  </div>
+</div>
+
+{# --- Fil conducteur : les trois questions, dans l'ordre --- #}
+<div class="card">
+  <ol class="fil">
+    <li class="fil__etape">
+      <span class="fil__num">1</span>
+      <span class="fil__texte"><strong>Quand ?</strong> Les créneaux qui décrochent</span>
+    </li>
+    <li class="fil__fleche" aria-hidden="true">→</li>
+    <li class="fil__etape">
+      <span class="fil__num">2</span>
+      <span class="fil__texte"><strong>Quoi ?</strong> Les produits à pousser</span>
+    </li>
+    <li class="fil__fleche" aria-hidden="true">→</li>
+    <li class="fil__etape">
+      <span class="fil__num">3</span>
+      <span class="fil__texte"><strong>Comment ?</strong> Les formules à créer</span>
+    </li>
+  </ol>
+  <p class="subtitle" style="margin:14px 0 0">
+    Ces propositions sont déduites de vos ventes par des règles simples et
+    explicites — aucune estimation automatique. Chaque recommandation est
+    accompagnée des chiffres qui la justifient, afin de rester vérifiable.
+  </p>
+</div>
+
+{# --- 1. Quand : les créneaux creux --- #}
+<div class="card">
+  <div class="card__title card__title--row">
+    <h2 class="card__title" style="margin:0">
+      <span class="fil__num fil__num--titre">1</span> Quand agir — créneaux en retrait
+    </h2>
+    <span class="card__hint">CA inférieur à 60 % de la moyenne horaire</span>
+  </div>
+
+  {% if resultat.graphe_heures.valeurs | sum > 0 %}
+  <div class="chart-box" style="margin-bottom:20px">
+    <canvas id="chart-heures" role="img"
+            aria-label="Chiffre d'affaires par heure, créneaux en retrait signalés"></canvas>
+  </div>
+  <p class="legende">
+    <span class="puce puce--vert"></span> heures dans la moyenne
+    <span class="puce puce--rouge"></span> créneaux en retrait
+    <span class="puce puce--trait"></span> moyenne horaire
+  </p>
+  {% endif %}
+
+  {% if resultat.creneaux_creux %}
+    {% for c in resultat.creneaux_creux %}
+    <div class="oppo">
+      <div class="oppo__titre">{{ c.libelle }}</div>
+      <p class="oppo__constat">
+        {{ c.ca | euros }} sur ce créneau contre {{ c.moyenne_horaire | euros }}
+        en moyenne, soit <strong>−{{ c.ecart_pourcent }} %</strong>
+        ({{ c.commandes | nombre }} commandes).
+      </p>
+      <p class="oppo__action">
+        <strong>Piste :</strong> une offre limitée à ce créneau (formule déjeuner,
+        remise sur une gamme) viserait un manque à gagner estimé à
+        <strong>{{ c.manque_a_gagner | euros }}</strong> par rapport à une heure moyenne.
+      </p>
+    </div>
+    {% endfor %}
+  {% else %}
+    <p class="subtitle">Aucun créneau nettement en retrait sur la période.</p>
+  {% endif %}
+</div>
+
+{# --- 2. Quoi : les produits en retrait --- #}
+<div class="card">
+  <div class="card__title card__title--row">
+    <h2 class="card__title" style="margin:0">
+      <span class="fil__num fil__num--titre">2</span> Quoi pousser — produits en retrait
+    </h2>
+    <span class="card__hint">part de CA inférieure à 60 % de la part moyenne</span>
+  </div>
+
+  {% if resultat.graphe_produits.valeurs %}
+  <div class="chart-box chart-box--tall" style="margin-bottom:20px">
+    <canvas id="chart-produits" role="img"
+            aria-label="Part du chiffre d'affaires par produit, produits en retrait signalés"></canvas>
+  </div>
+  <p class="legende">
+    <span class="puce puce--vert"></span> part conforme
+    <span class="puce puce--rouge"></span> produit en retrait
+    <span class="puce puce--trait"></span> part moyenne par produit
+  </p>
+  {% endif %}
+
+  {% if resultat.produits_en_retrait %}
+    {% for p in resultat.produits_en_retrait %}
+    <div class="oppo">
+      <div class="oppo__titre">{{ p.nom }}</div>
+      <p class="oppo__constat">
+        {{ p.part | pourcent }} % du chiffre d'affaires contre {{ p.part_moyenne | pourcent }} % en
+        moyenne par produit — {{ p.quantite | nombre }} unités vendues pour
+        {{ p.ca | euros }}.
+      </p>
+      <p class="oppo__action">
+        <strong>Piste :</strong> mise en avant ciblée (suggestion à la commande,
+        offre découverte). Si le produit ne décolle pas, envisager son retrait de
+        la carte au profit d'une référence plus demandée.
+      </p>
+    </div>
+    {% endfor %}
+  {% else %}
+    <p class="subtitle">Aucun produit nettement en retrait sur la période.</p>
+  {% endif %}
+</div>
+
+{# --- 3. Comment : les associations de produits --- #}
+<div class="card">
+  <div class="card__title card__title--row">
+    <h2 class="card__title" style="margin:0">
+      <span class="fil__num fil__num--titre">3</span> Quelles formules — produits achetés ensemble
+    </h2>
+    <span class="card__hint">associations les plus fréquentes</span>
+  </div>
+
+  {% if resultat.associations %}
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr>
+          <th scope="col">Association</th>
+          <th scope="col">Commandes</th>
+          <th scope="col">Part</th>
+          <th scope="col">Panier moyen</th>
+          <th scope="col">Écart au panier global</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in resultat.associations %}
+        <tr>
+          <td class="col-strong">{{ a.produits | join(' + ') }}</td>
+          <td>{{ a.commandes | nombre }}</td>
+          <td>{{ a.part_commandes | pourcent }} %</td>
+          <td>{{ a.panier_moyen | euros }}</td>
+          <td>
+            {% if a.ecart_panier > 0 %}
+              <span style="color:var(--green);font-weight:600">+{{ a.ecart_panier | euros }}</span>
+            {% else %}
+              <span style="color:var(--muted)">{{ a.ecart_panier | euros }}</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="subtitle" style="margin-top:14px">
+    <strong>Piste :</strong> les associations dont le panier moyen dépasse le
+    panier global ({{ resultat.associations[0].panier_moyen_global | euros }})
+    sont les meilleures candidates à une formule : elles sont déjà choisies
+    spontanément et font monter le ticket.
+  </p>
+  {% else %}
+  <p class="subtitle">Pas assez de commandes multi-produits pour dégager une association fiable.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2 class="card__title">Limites à garder en tête</h2>
+  <p class="subtitle" style="margin:0">
+    Ces pistes signalent des écarts, elles ne les expliquent pas : un créneau
+    creux peut relever d'une fermeture, d'un effectif réduit ou d'une réalité de
+    quartier. Elles se lisent comme un point de départ à confronter au terrain,
+    et non comme une décision automatique. L'application ne dispose par ailleurs
+    d'aucun historique de promotions passées : elle ne peut donc pas mesurer
+    l'effet réel d'une opération déjà menée.
+  </p>
+</div>
+
+<script id="data-heures" type="application/json">{{ resultat.graphe_heures | tojson }}</script>
+<script id="data-produits" type="application/json">{{ resultat.graphe_produits | tojson }}</script>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  "use strict";
+  var VERT = "#0f8b6c", VERT_CLAIR = "#bfd8cf", ROUGE = "#e0705f";
+  var GRILLE = "#eef2f7", TEXTE = "#64748b";
+
+  function lire(id) {
+    var el = document.getElementById(id);
+    try { return JSON.parse(el.textContent); } catch (e) { return null; }
+  }
+
+  // Trait horizontal marquant la moyenne : c'est l'écart à cette référence
+  // qui fait l'opportunité, il doit donc être visible sur le graphique.
+  var traitMoyenne = {
+    id: "traitMoyenne",
+    afterDatasetsDraw: function (chart, args, options) {
+      var y = chart.scales.y.getPixelForValue(options.valeur);
+      var ctx = chart.ctx;
+      ctx.save();
+      ctx.strokeStyle = "#12284c";
+      ctx.setLineDash([5, 4]);
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(chart.chartArea.left, y);
+      ctx.lineTo(chart.chartArea.right, y);
+      ctx.stroke();
+      ctx.restore();
+    }
+  };
+
+  function barres(canvasId, data, marqueur, suffixe) {
+    var c = document.getElementById(canvasId);
+    if (!c || !window.Chart || !data || !data.valeurs.length) return;
+    new Chart(c, {
+      type: "bar",
+      plugins: [traitMoyenne],
+      data: {
+        labels: data.labels,
+        datasets: [{
+          data: data.valeurs,
+          backgroundColor: data.valeurs.map(function (_, i) {
+            return data[marqueur][i] ? ROUGE : VERT_CLAIR;
+          }),
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          traitMoyenne: { valeur: data.moyenne },
+          tooltip: {
+            callbacks: {
+              label: function (ctx) { return ctx.parsed.y + suffixe; }
+            }
+          }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: TEXTE, maxRotation: 60, minRotation: 0 } },
+          y: { grid: { color: GRILLE }, ticks: { color: TEXTE }, beginAtZero: true }
+        }
+      }
+    });
+  }
+
+  barres("chart-heures", lire("data-heures"), "creux", " €");
+  barres("chart-produits", lire("data-produits"), "faibles", " %");
+})();
+</script>
+{% endblock %}

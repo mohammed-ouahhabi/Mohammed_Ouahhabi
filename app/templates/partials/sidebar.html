@@ -19,6 +19,13 @@
       {{ icone('chart') }}<span>Ventes</span>
     </a>
     {% endif %}
+    {% if current_user.peut_analyser %}
+    <a class="nav-link {{ 'active' if request.endpoint == 'ventes.opportunites_promotionnelles' }}"
+       href="{{ url_for('ventes.opportunites_promotionnelles') }}"
+       {{ 'aria-current=page' if request.endpoint == 'ventes.opportunites_promotionnelles' }}>
+      {{ icone('target') }}<span>Opportunités</span>
+    </a>
+    {% endif %}
     <a class="nav-link {{ 'active' if request.endpoint == 'ventes.catalogue' }}"
        href="{{ url_for('ventes.catalogue') }}"
        {{ 'aria-current=page' if request.endpoint == 'ventes.catalogue' }}>

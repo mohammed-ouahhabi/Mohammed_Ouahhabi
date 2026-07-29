@@ -97,6 +97,16 @@ def _enregistrer_contexte_templates(app):
         except (TypeError, ValueError):
             return "0"
 
+    @app.template_filter("pourcent")
+    def pourcent(valeur, decimales=1):
+        """Pourcentage à la française : séparateur décimal virgule, sans
+        décimale inutile (12.5 -> « 12,5 » ; 8.0 -> « 8 »)."""
+        try:
+            texte = f"{float(valeur):.{decimales}f}".rstrip("0").rstrip(".")
+            return texte.replace(".", ",") or "0"
+        except (TypeError, ValueError):
+            return "0"
+
 
 def _enregistrer_commandes_cli(app):
     """Commandes `flask ...` personnalisées (création de l'admin, seed)."""
