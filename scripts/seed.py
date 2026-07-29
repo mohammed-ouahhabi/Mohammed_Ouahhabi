@@ -21,6 +21,7 @@ from app.models import (
     LigneCommande,
     Vente,
     ImportFichier,
+    ImportTemporaire,
     ROLE_MANAGER,
     ROLE_ASSISTANT,
     ROLE_PREMIER_EQUIPIER,
@@ -71,6 +72,7 @@ def executer_seed():
     # l'ordre des dépendances (indispensable en PostgreSQL, où les clés
     # étrangères sont strictement appliquées) : import_fichier référence
     # utilisateur, vente et ligne_commande référencent commande.
+    ImportTemporaire.query.delete()
     ImportFichier.query.delete()
     Vente.query.delete()
     LigneCommande.query.delete()

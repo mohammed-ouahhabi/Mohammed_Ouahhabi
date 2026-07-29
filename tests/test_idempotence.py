@@ -150,6 +150,46 @@ def test_ecran_doublon_bloque_par_defaut(client, db):
     assert "Continuer quand même" in html
 
 
+def test_depot_conserve_en_base_entre_les_deux_etapes(client, db):
+    """Le fichier déposé doit survivre entre l'upload et le traitement, sans
+    dépendre du disque local (éphémère sur l'hébergement)."""
+    import io
+    import re
+    from app.models import ImportTemporaire
+    from tests.conftest import connexion
+
+    connexion(client, "manager@test.fr")
+    data = {"fichier": (io.BytesIO(CONTENU.encode("utf-8")), "ventes.csv")}
+    r = client.post("/import/", data=data, content_type="multipart/form-data")
+    jeton = re.search(r'name="jeton" value="([^"]+)"', r.get_data(as_text=True)).group(1)
+
+    # Le contenu est bien stocké en base, pas seulement sur disque.
+    depot = ImportTemporaire.query.filter_by(jeton=jeton).first()
+    assert depot is not None
+    assert depot.contenu.decode("utf-8") == CONTENU
+
+    champs = {"map_date": "date", "map_produit": "produit",
+              "map_quantite": "quantite", "map_montant": "montant"}
+    r2 = client.post("/import/traiter", data={"jeton": jeton, **champs})
+    assert "Récapitulatif" in r2.get_data(as_text=True)
+    # Le dépôt est purgé une fois traité.
+    assert ImportTemporaire.query.filter_by(jeton=jeton).first() is None
+
+
+def test_jeton_inconnu_message_clair_sans_plantage(client, db):
+    from tests.conftest import connexion
+
+    connexion(client, "manager@test.fr")
+    r = client.post(
+        "/import/traiter",
+        data={"jeton": "jeton-inexistant", "map_date": "date", "map_produit": "produit",
+              "map_quantite": "quantite", "map_montant": "montant"},
+        follow_redirects=True,
+    )
+    assert r.status_code == 200
+    assert "recharger le fichier" in r.get_data(as_text=True)
+
+
 def test_reinitialisation_demo_reservee_au_manager(client, db):
     """L'assistant manager (back-office) ne doit PAS pouvoir réinitialiser."""
     from tests.conftest import connexion

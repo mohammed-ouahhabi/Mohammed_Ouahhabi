@@ -117,6 +117,31 @@ C'est une faiblesse : le jury peut demander « et sur un vrai volume ? ».
 
 ---
 
+## 3 bis. AJOUT — Le stockage du fichier entre les deux étapes de l'import
+
+Défaut identifié **en production**, à ajouter en § 15.6 « Les limites et l'accès »
+ou en § 16.3 comme second exemple de correctif.
+
+> **Une contrainte propre à l'hébergement en conteneur.** L'import se déroule en
+> deux temps : le fichier est d'abord analysé pour proposer une correspondance de
+> colonnes, puis traité une fois celle-ci confirmée. Il doit donc être conservé
+> entre deux requêtes. La première version l'écrivait sur le disque local — ce
+> qui fonctionne en développement, mais s'est révélé fragile en production : sur
+> un hébergement de type conteneur, le système de fichiers est éphémère. Un
+> redéploiement ou une mise en veille de l'instance efface le fichier, et
+> l'utilisateur se voit répondre que son dépôt est introuvable au moment de
+> valider.
+>
+> Le fichier est désormais conservé **en base de données** le temps du
+> traitement, la base étant le seul stockage réellement persistant de
+> l'application. Le dépôt est supprimé dès le traitement terminé, et purgé au
+> bout d'une heure en cas d'abandon. Cet incident illustre une différence
+> structurante entre un environnement de développement et un environnement de
+> production : ce qui est acquis localement — la persistance du disque — ne l'est
+> pas nécessairement une fois déployé.
+
+---
+
 ## 4. À TRANCHER — Incohérence Nanterre / Chatou
 
 **Le risque le plus visible pour le jury.**

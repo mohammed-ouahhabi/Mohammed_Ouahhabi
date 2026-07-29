@@ -194,6 +194,37 @@ class Vente(db.Model):
         return f"<Vente {self.id_vente} ({self.mode_paiement})>"
 
 
+class ImportTemporaire(db.Model):
+    """Fichier déposé, conservé entre l'étape d'upload et celle de traitement.
+
+    L'import se fait en deux temps : on lit d'abord les en-têtes pour proposer
+    une correspondance, puis on traite le fichier une fois celle-ci confirmée.
+    Le fichier doit donc survivre entre les deux requêtes.
+
+    Il est stocké en base et non sur le disque local : sur un hébergement de
+    type conteneur, le système de fichiers est éphémère (un redéploiement ou une
+    mise en veille l'efface), ce qui interromprait l'import en cours. La base est
+    le seul stockage réellement persistant de l'application.
+
+    Ces enregistrements sont supprimés dès le traitement terminé, et purgés au
+    bout d'une heure en cas d'abandon.
+    """
+
+    __tablename__ = "import_temporaire"
+
+    id_import_temporaire = db.Column(db.Integer, primary_key=True)
+    jeton = db.Column(db.String(64), unique=True, nullable=False, index=True)
+    nom_fichier = db.Column(db.String(255), nullable=False)
+    contenu = db.Column(db.LargeBinary, nullable=False)
+    utilisateur_id = db.Column(
+        db.Integer, db.ForeignKey("utilisateur.id_utilisateur"), nullable=False
+    )
+    date_depot = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<ImportTemporaire {self.nom_fichier}>"
+
+
 class ImportFichier(db.Model):
     __tablename__ = "import_fichier"
 
