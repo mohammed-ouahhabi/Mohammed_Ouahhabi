@@ -28,8 +28,8 @@ def main():
         from app.models import PointDeVente
         from app.models import ROLE_MANAGER  # adapte l'import si besoin
         pdv = PointDeVente.query.first()
-        for nom, email in [("Ahmed O.", "manager@pdv-nanterre.fr"),
-                           ("Responsable Nanterre", "responsable@pdv-nanterre.fr")]:
+        for nom, email in [("Ahmed O.", "manager@pdv-chatou.fr"),
+                           ("Responsable Chatou", "responsable@pdv-chatou.fr")]:
             u = Utilisateur.query.filter_by(email=email).first()
             if u is None:
                 u = Utilisateur(nom=nom, email=email, role=ROLE_MANAGER, actif=True,

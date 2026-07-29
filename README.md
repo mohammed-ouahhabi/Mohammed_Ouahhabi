@@ -25,10 +25,10 @@ Mot de passe commun : **`motdepasse123`**
 
 | Rôle                              | E-mail                        | Tableau de bord | Analyse | **Back-office** |
 | --------------------------------- | ----------------------------- | :-------------: | :-----: | :-------------: |
-| **Manager** (accès admin complet) | **`manager@pdv-nanterre.fr`** |       ✅        |   ✅    |       ✅        |
-| Assistant manager                 | `adjoint@pdv-nanterre.fr`     |       ✅        |   ✅    |       ✅        |
-| Premier équipier                  | `premier@pdv-nanterre.fr`     |       ✅        |   ✅    |       ❌        |
-| Équipier                          | `equipier@pdv-nanterre.fr`    |       ✅        |   ❌    |       ❌        |
+| **Manager** (accès admin complet) | **`manager@pdv-chatou.fr`** |       ✅        |   ✅    |       ✅        |
+| Assistant manager                 | `adjoint@pdv-chatou.fr`     |       ✅        |   ✅    |       ✅        |
+| Premier équipier                  | `premier@pdv-chatou.fr`     |       ✅        |   ✅    |       ❌        |
+| Équipier                          | `equipier@pdv-chatou.fr`    |       ✅        |   ❌    |       ❌        |
 
 ➡️ **Pour accéder au back-office d'administration**, connectez-vous avec le compte
 **Manager** ci-dessus, puis utilisez la section « Administration » de la barre

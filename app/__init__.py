@@ -104,7 +104,7 @@ def _enregistrer_commandes_cli(app):
             return
         pdv = PointDeVente.query.first()
         if pdv is None:
-            pdv = PointDeVente(nom="Nanterre", ville="Nanterre")
+            pdv = PointDeVente(nom="Chatou", ville="Chatou")
             db.session.add(pdv)
             db.session.flush()
         u = Utilisateur(nom=nom, email=email, role=ROLE_MANAGER, actif=True,

@@ -81,17 +81,17 @@ def executer_seed():
     db.session.commit()
 
     # 1. Point de vente
-    pdv = PointDeVente(nom="Nanterre", ville="Nanterre")
+    pdv = PointDeVente(nom="Chatou", ville="Chatou")
     db.session.add(pdv)
     db.session.flush()
 
     # 2. Utilisateurs (un par rôle, mot de passe commun de démo)
     comptes = [
-        ("Ahmed O.", "manager@pdv-nanterre.fr", ROLE_MANAGER),
-        ("Responsable Nanterre", "responsable@pdv-nanterre.fr", ROLE_MANAGER),
-        ("Adjoint Nanterre", "adjoint@pdv-nanterre.fr", ROLE_ASSISTANT),
-        ("Premier équipier", "premier@pdv-nanterre.fr", ROLE_PREMIER_EQUIPIER),
-        ("Équipier", "equipier@pdv-nanterre.fr", ROLE_EQUIPIER),
+        ("Ahmed O.", "manager@pdv-chatou.fr", ROLE_MANAGER),
+        ("Responsable Chatou", "responsable@pdv-chatou.fr", ROLE_MANAGER),
+        ("Adjoint Chatou", "adjoint@pdv-chatou.fr", ROLE_ASSISTANT),
+        ("Premier équipier", "premier@pdv-chatou.fr", ROLE_PREMIER_EQUIPIER),
+        ("Équipier", "equipier@pdv-chatou.fr", ROLE_EQUIPIER),
     ]
     for nom, email, role in comptes:
         u = Utilisateur(nom=nom, email=email, role=role, actif=True,

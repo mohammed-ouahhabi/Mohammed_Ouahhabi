@@ -18,7 +18,7 @@ Présenter le client réel et le cadre.
   dans l'organisation.
 - Le cadre du projet : pourquoi ce besoin est apparu pendant l'alternance.
 
-`[À COMPLÉTER : nom/ville du PDV (ou anonymisé « PDV de Nanterre »), taille de
+`[À COMPLÉTER : nom/ville du PDV (ou anonymisé « PDV de Chatou »), taille de
 l'équipe, ce que tu faisais concrètement au quotidien.]`
 
 ## 2. Problématique métier  (~1-2 p)

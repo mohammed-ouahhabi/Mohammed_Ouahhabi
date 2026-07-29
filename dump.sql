@@ -9849,7 +9849,7 @@ CREATE TABLE point_de_vente (
 	ville VARCHAR(120) NOT NULL, 
 	PRIMARY KEY (id_point_de_vente)
 );
-INSERT INTO "point_de_vente" VALUES(1,'Nanterre','Nanterre');
+INSERT INTO "point_de_vente" VALUES(1,'Chatou','Chatou');
 CREATE TABLE produit (
 	id_produit INTEGER NOT NULL, 
 	nom VARCHAR(120) NOT NULL, 
@@ -9876,11 +9876,11 @@ CREATE TABLE utilisateur (
 	PRIMARY KEY (id_utilisateur), 
 	FOREIGN KEY(point_de_vente_id) REFERENCES point_de_vente (id_point_de_vente)
 );
-INSERT INTO "utilisateur" VALUES(1,1,'Ahmed O.','manager@pdv-nanterre.fr','manager',1,'scrypt:32768:8:1$69tOCWfzsawS4Um0$fe75c609896199bba566af98d998b270a461f613fff11c8c07acdd9a12a097c20330e2f7230e3b8a60358444a232ea8f3cbb7402e7f0d6f67dbb4de11a93f5ab');
-INSERT INTO "utilisateur" VALUES(2,1,'Responsable Nanterre','responsable@pdv-nanterre.fr','manager',1,'scrypt:32768:8:1$1NsHrrUMxD9e4OFB$ecc815af637618a43c89d69e7d2c5c7a1d1c87f57339ed5c1b9a739f598519d916e9af661060ae4eed57d426a70445dc75e615591ce3892ae5040db94eaab7bb');
-INSERT INTO "utilisateur" VALUES(3,1,'Adjoint Nanterre','adjoint@pdv-nanterre.fr','assistant',1,'scrypt:32768:8:1$BTqfiyQBGb007fXk$e86d86d5664f1d25446aa6501cd5eee5bcdf5d93d8593205a51d9c91d060b5889154ecef1d71298576cb6c716b05c9ce80f27cce69bc2360d947a18a3a8d7286');
-INSERT INTO "utilisateur" VALUES(4,1,'Premier équipier','premier@pdv-nanterre.fr','premier_equipier',1,'scrypt:32768:8:1$9crb8uxCmuougGxE$3863c4062ed56d2e9890a5cb7a3f0f80fe8ef45c8bd243efe63ea0e2fcda945a4e8d29a9367ceb183755831c352d8961b4d95b2adcefb5012c31af12698a234f');
-INSERT INTO "utilisateur" VALUES(5,1,'Équipier','equipier@pdv-nanterre.fr','equipier',1,'scrypt:32768:8:1$sG1nPYXKXuMm8vKY$1346a6bd9fde90caaf73380093db30eafb1438658043481e26c2c04f782b9fe7111aa57956f510add9014d6dd541877f632d1a3049620d9b960c4f58e2c44529');
+INSERT INTO "utilisateur" VALUES(1,1,'Ahmed O.','manager@pdv-chatou.fr','manager',1,'scrypt:32768:8:1$xNb00BZOLrjoVMb1$240ac6c07c2dccb21f4fc4196a9587c785de3e98b869a8a4db2e3107944ca29b0ddc56df1007ff153b4612a85ac0d57181e890ce58cf217c751f07f80c65826e');
+INSERT INTO "utilisateur" VALUES(2,1,'Responsable Chatou','responsable@pdv-chatou.fr','manager',1,'scrypt:32768:8:1$bHbg061Z70NB3uJ0$a5869a70e537a358f1db7928af2634bb7a6d5723a9e647c50e77c3e27b3a0aa091e1303596b93d477f615595cc0d631c1e92205c1c8fbbfd6d6143c9e742274f');
+INSERT INTO "utilisateur" VALUES(3,1,'Adjoint Chatou','adjoint@pdv-chatou.fr','assistant',1,'scrypt:32768:8:1$23QCsdvfcjJruJk4$f6d7758be53d8a3f39bceccdfe48a7c273058ac0bf80d5b6b09fc2a641afe5fa73847e1fee8976483a1b6799b5ed149b1e6463de70241db3c91cda5e70e1506a');
+INSERT INTO "utilisateur" VALUES(4,1,'Premier équipier','premier@pdv-chatou.fr','premier_equipier',1,'scrypt:32768:8:1$nSv3hZYLRc7iDFSY$de06bdee123bb215cf2b59706f8bfdbc6a31084df879e69f34a6420ff1e4a2ce7e733f6b3042b100198ba94d97a9e71fec3b58f652770ba9b1e26481178c999b');
+INSERT INTO "utilisateur" VALUES(5,1,'Équipier','equipier@pdv-chatou.fr','equipier',1,'scrypt:32768:8:1$ZQ4HZEYZGUGPg0Nz$f0b8f06bb7846f8961434348264845fadb5f5a0b3a9f8cebe8925cf121eaf76ac3ba9d98c2e842c4bfbfa750ab247447883eef4976fa2fbd50da378cf3ed92e6');
 CREATE TABLE vente (
 	id_vente INTEGER NOT NULL, 
 	commande_id INTEGER NOT NULL, 

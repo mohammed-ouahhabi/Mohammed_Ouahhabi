@@ -28,6 +28,11 @@ MIN_MOYENNE_PIC = 2             # moyenne mini d'un créneau pour parler de « p
 # Priorité d'affichage des niveaux (critique en premier).
 _ORDRE_NIVEAU = {"critique": 0, "attention": 1, "info": 2}
 
+# Noms de jours en français : strftime('%A') dépend de la locale du serveur et
+# renvoie l'anglais par défaut sur l'hébergement. On ne laisse pas ce hasard
+# décider de la langue affichée à l'utilisateur.
+JOURS_FR = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"]
+
 
 def calculer_alertes(point_de_vente_id, jours=30):
     """Renvoie la liste des alertes pour un PDV sur la période. Vide si rien."""
@@ -101,7 +106,7 @@ def _chute_ca(pdv_id, debut, fin):
                 "message": (
                     f"CA de {round(par_jour[jour])} € le {jour.strftime('%d/%m')}, "
                     f"soit −{round(ecart * 100)} % sous la moyenne des "
-                    f"{jour.strftime('%A')}s récents (~{round(moyenne)} €)."
+                    f"{JOURS_FR[jour.weekday()]}s récents (~{round(moyenne)} €)."
                 ),
             })
     return alertes

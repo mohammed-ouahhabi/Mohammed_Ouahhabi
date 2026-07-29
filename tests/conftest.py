@@ -45,7 +45,7 @@ def db(app):
 
 def _semer(db):
     """Petit jeu de données déterministe pour les tests."""
-    pdv = PointDeVente(nom="Nanterre", ville="Nanterre")
+    pdv = PointDeVente(nom="Chatou", ville="Chatou")
     db.session.add(pdv)
     db.session.flush()
 
