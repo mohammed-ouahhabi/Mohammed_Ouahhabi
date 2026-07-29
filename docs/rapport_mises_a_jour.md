@@ -2,8 +2,9 @@
 
 > Établi en confrontant `PFE_rapport_VALIDE_2.docx` au code réellement déployé.
 > Le rapport est complet et bien écrit ; il évite les chiffres figés, ce qui le
-> protège du vieillissement. Restent **trois ajouts** (fonctionnalités
-> développées après sa rédaction) et **une incohérence à trancher**.
+> protège du vieillissement. Restent **cinq ajouts** (fonctionnalités
+> développées après sa rédaction), **une correction** dans le cahier des charges
+> et **une incohérence à trancher**.
 
 ---
 
@@ -163,6 +164,34 @@ des alertes et de la prévision.
 > sont affichées à l'écran : ces pistes signalent des écarts sans les expliquer,
 > et l'application ne conservant aucun historique de promotions, elle ne peut pas
 > mesurer l'effet d'une opération déjà menée.
+
+---
+
+## 3 quater. À CORRIGER — Le cahier des charges annonce cinq écrans
+
+Le cahier des charges est une **section du rapport** (§ 9), il se met donc à jour
+avec lui. Son § 9.2 « Les fonctionnalités détaillées » ouvre sur :
+
+> « La solution s'organise autour de **cinq écrans**… »
+
+L'application en compte désormais **six**. Deux corrections :
+
+1. Remplacer « cinq écrans » par « six écrans ».
+2. Ajouter la description du nouvel écran, après l'écran 5 :
+
+> **Écran 6 — Opportunités promotionnelles (front-office).** Prolongement de
+> l'analyse : l'écran ne se contente pas de restituer les ventes, il propose des
+> actions commerciales chiffrées, organisées selon trois questions — quand agir
+> (créneaux horaires dont le chiffre d'affaires décroche), quoi pousser (produits
+> dont la part de chiffre d'affaires est en retrait) et quelles formules créer
+> (produits fréquemment achetés ensemble). Chaque proposition s'accompagne des
+> chiffres qui la fondent. L'accès est aligné sur celui de l'analyse des ventes.
+
+> **Cohérence à vérifier** : les sections qui énumèrent les écrans doivent suivre
+> — notamment § 11.3 « Les cinq écrans maquettés » (les maquettes d'origine en
+> comptaient bien cinq : préciser que le sixième écran est né d'une évolution
+> postérieure au maquettage, ce qui est un point favorable — il montre une
+> démarche itérative) et § 12 sur le développement front-end.
 
 ---
 
