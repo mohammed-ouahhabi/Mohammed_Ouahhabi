@@ -22,3 +22,30 @@ colonnes portent des noms différents (`date_commande`, `article`, `qte`, `prix`
 et sont séparées par `;`. L'écran de correspondance les **auto-détecte** et les
 associe au schéma cible — aucun redéveloppement nécessaire pour une nouvelle
 source.
+
+---
+
+`ventes_dominos_T1_2026.csv` est le **jeu de données de volume réel** :
+12 234 lignes de ventes du 1er janvier au 31 mars 2026
+(colonnes `date_heure, nom_pizza, quantite, prix_total, taille, categorie`).
+
+Résultat de l'import :
+
+| Indicateur | Valeur |
+|---|---|
+| Lignes lues | 12 234 |
+| Lignes intégrées | 12 233 |
+| Lignes rejetées | 1 (doublon strict — voir ci-dessous) |
+| Commandes créées | 5 370 |
+| Produits distincts | 32 |
+| Pic d'activité | 12 h |
+| Durée de traitement | ≈ 5 s |
+
+> **Le doublon détecté est un cas limite intéressant à connaître.** Le ticket du
+> 16/02/2026 à 18:15:02 contient **deux lignes strictement identiques**
+> (« Steak and Cheese XL », 20,99 €) : un client a commandé deux fois le même
+> article, enregistré en deux lignes de quantité 1 plutôt qu'en une ligne de
+> quantité 2. Le contrôle qualité les considère comme un doublon et n'en retient
+> qu'une. C'est une limite assumée de la règle actuelle : elle protège contre la
+> duplication accidentelle, mais ne sait pas distinguer une répétition légitime
+> au sein d'un même ticket.
