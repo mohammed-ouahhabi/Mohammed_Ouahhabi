@@ -3,8 +3,9 @@
 > Établi en confrontant `PFE_rapport_VALIDE_2.docx` au code réellement déployé.
 > Le rapport est complet et bien écrit ; il évite les chiffres figés, ce qui le
 > protège du vieillissement. Restent **cinq ajouts** (fonctionnalités
-> développées après sa rédaction), **une correction** dans le cahier des charges
-> et **une incohérence à trancher**.
+> développées après sa rédaction) et **une correction** dans le cahier des
+> charges. L'incohérence de nom du point de vente est, elle, déjà résolue côté
+> application (§ 4).
 
 ---
 
@@ -195,25 +196,29 @@ L'application en compte désormais **six**. Deux corrections :
 
 ---
 
-## 4. À TRANCHER — Incohérence Nanterre / Chatou
+## 4. RÉSOLU — Harmonisation du point de vente sur Chatou
 
-**Le risque le plus visible pour le jury.**
+Le rapport situait le cas d'application à Chatou tandis que l'application
+affichait Nanterre sur chaque écran : le jury aurait relevé l'écart en ouvrant la
+solution. **Le code a été aligné sur le rapport**, qui fait foi puisqu'il
+s'appuie sur l'entretien mené sur le terrain.
 
-| | Valeur |
-|---|---|
-| Le rapport (4 mentions, dont l'entretien en annexe) | **Chatou** |
-| L'application déployée (nom du PDV affiché sur chaque écran) | **Nanterre** |
-| Les comptes de démonstration | `manager@pdv-**nanterre**.fr` |
+| | Avant | Après |
+|---|---|---|
+| Nom du point de vente | Nanterre | **Chatou** |
+| Comptes de démonstration | `…@pdv-nanterre.fr` | **`…@pdv-chatou.fr`** |
+| README, formulaire de connexion, jeu de test, export SQL | Nanterre | **Chatou** |
 
-Le jury ouvre l'application et lit « Point de vente : Nanterre » alors que le
-rapport et le compte-rendu d'entretien parlent de Chatou. Deux options :
+Mot de passe (`motdepasse123`), rôles et matrice d'accès inchangés.
 
-- **Aligner le code sur le rapport** (recommandé) : renommer le point de vente en
-  « Chatou » dans le jeu de démonstration, ainsi que les adresses e-mail. Il faut
-  ensuite redéployer puis utiliser l'action « Réinitialiser les données de
-  démonstration » pour que la base en ligne reflète le changement.
-- **Aligner le rapport sur le code** : remplacer Chatou par Nanterre dans le
-  document — mais cela contredirait l'entretien mené sur le terrain.
+**Côté rapport, il ne reste qu'à vérifier** qu'aucune occurrence de « Nanterre »
+ne subsiste dans le document, et que les captures de l'annexe 2 sont bien les
+versions régénérées (les précédentes affichaient l'ancien nom).
+
+> ⚠️ **Action restante côté production** : la base en ligne conserve les données
+> créées avant le renommage. Après déploiement, se connecter en Manager et
+> utiliser « Réinitialiser les données de démonstration » pour que l'application
+> déployée affiche Chatou.
 
 ---
 
