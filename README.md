@@ -157,6 +157,27 @@ L'application est alors accessible à l'adresse : http://127.0.0.1:5000
 > évolué et que les migrations ne sont pas appliquées, les écrans concernés
 > affichent une page d'erreur explicite rappelant cette commande.
 
+### En cas de problème avec la base locale
+
+Deux utilitaires sont fournis :
+
+```bash
+# Diagnostic : quelle base est utilisée, à quelle révision, quel schéma
+python -m scripts.diagnostic
+
+# Réinitialisation complète (développement uniquement) :
+# supprime la base locale, rejoue les migrations, recharge le jeu de démo
+python -m scripts.reinit_db
+```
+
+`reinit_db` est une opération destructrice : il **refuse de s'exécuter** sur
+autre chose qu'une base SQLite locale et demande une confirmation explicite.
+
+Les migrations sont par ailleurs **défensives** : chaque table ou colonne n'est
+créée que si elle est absente. Une base dont le registre de migrations s'est
+désynchronisé du schéma réel — cas d'une base créée hors migrations — peut ainsi
+rattraper son retard sans échouer sur un « table already exists ».
+
 ---
 
 ## 5. Comptes de démonstration
