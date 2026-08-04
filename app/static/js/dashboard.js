@@ -47,11 +47,13 @@
   var pics = lire("data-pics", {});
   var cPics = document.getElementById("chart-pics");
   if (cPics && window.Chart) {
-    // On affiche la plage d'ouverture 10h -> 23h pour rester lisible.
+    // Plage d'ouverture 11h -> 22h : elle doit correspondre exactement au
+    // libellé affiché au-dessus du graphique, sinon l'axe annonce des heures
+    // de fermeture et le lecteur croit à une absence de vente.
     var heures = [], valeurs = [], couleurs = [];
     var max = 0;
-    for (var h = 10; h <= 23; h++) { max = Math.max(max, pics[h] || 0); }
-    for (var i = 10; i <= 23; i++) {
+    for (var h = 11; h <= 22; h++) { max = Math.max(max, pics[h] || 0); }
+    for (var i = 11; i <= 22; i++) {
       var v = pics[i] || 0;
       heures.push(i + "h");
       valeurs.push(v);

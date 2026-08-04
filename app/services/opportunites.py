@@ -50,12 +50,12 @@ def analyser(point_de_vente_id, jours=90):
         "produits_en_retrait": retrait,
         "associations": associations_produits(point_de_vente_id, debut, fin),
         # Séries complètes, pour visualiser l'écart plutôt que de le lire.
-        "graphe_heures": serie_ca_par_heure(point_de_vente_id, debut, fin, creneaux),
+        "graphe_heures": serie_ca_par_heure(point_de_vente_id, debut, fin),
         "graphe_produits": serie_parts_produits(point_de_vente_id, debut, fin, retrait),
     }
 
 
-def serie_ca_par_heure(point_de_vente_id, debut, fin, creneaux):
+def serie_ca_par_heure(point_de_vente_id, debut, fin):
     """CA par heure sur la plage d'ouverture, en signalant les créneaux creux."""
     lignes = (
         db.session.query(Commande.date_heure, LigneCommande.montant)
@@ -69,14 +69,19 @@ def serie_ca_par_heure(point_de_vente_id, debut, fin, creneaux):
         if date_heure.hour in par_heure:
             par_heure[date_heure.hour] += float(montant or 0)
 
-    heures_creuses = {c["heure"] for c in creneaux}
     actifs = [v for v in par_heure.values() if v > 0]
     moyenne = sum(actifs) / len(actifs) if actifs else 0
+    seuil = moyenne * SEUIL_CRENEAU_CREUX
+
+    # Le graphique applique la règle annoncée dans son en-tête : *tout* créneau
+    # sous le seuil est signalé. La liste détaillée sous le graphique ne retient
+    # que les trois plus pénalisants — c'est un choix d'affichage, pas la règle.
     return {
         "labels": [f"{h}h" for h in sorted(par_heure)],
         "valeurs": [round(par_heure[h], 2) for h in sorted(par_heure)],
-        "creux": [h in heures_creuses for h in sorted(par_heure)],
+        "creux": [0 < par_heure[h] < seuil for h in sorted(par_heure)],
         "moyenne": round(moyenne, 2),
+        "seuil": round(seuil, 2),
     }
 
 

@@ -60,6 +60,11 @@
   {% endif %}
 
   {% if resultat.creneaux_creux %}
+    <p class="subtitle" style="margin-bottom:12px">
+      Tous les créneaux sous le seuil sont signalés en rouge sur le graphique.
+      Le détail ci-dessous retient les <strong>trois plus pénalisants</strong>,
+      classés par manque à gagner.
+    </p>
     {% for c in resultat.creneaux_creux %}
     <div class="oppo">
       <div class="oppo__titre">{{ c.libelle }}</div>

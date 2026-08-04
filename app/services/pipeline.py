@@ -80,6 +80,43 @@ ALIAS = {
     },
 }
 
+# Le dictionnaire ALIAS rapproche les *noms de colonnes* d'une source du schéma
+# cible. Il ne suffit pas : deux caisses peuvent nommer identiquement une colonne
+# et y écrire des valeurs différentes pour la même réalité — « CB » ici, « Carte »
+# là. Sans normalisation, l'analyse compte deux moyens de paiement là où il n'y
+# en a qu'un. Le principe est le même qu'au niveau des colonnes : on normalise la
+# source pour protéger la cible.
+ALIAS_MODE_PAIEMENT = {
+    "Carte": {
+        "cb", "carte", "cartebancaire", "carteb", "cartebleue", "bancaire",
+        "creditcard", "card", "tpe", "sanscontact",
+    },
+    "Espèces": {"especes", "espece", "liquide", "cash", "numeraire"},
+    "Ticket resto": {
+        "ticketresto", "ticketsresto", "ticketrestaurant", "tr", "trd",
+        "titrerestaurant", "swile", "edenred",
+    },
+    "Chèque": {"cheque", "cheques", "check"},
+}
+
+
+def normaliser_mode_paiement(valeur):
+    """Ramène une valeur de mode de paiement à un libellé canonique.
+
+    Une valeur inconnue est conservée telle quelle, simplement nettoyée : mieux
+    vaut afficher un libellé inattendu que de le faire disparaître silencieusement.
+    """
+    if valeur is None:
+        return None
+    brut = str(valeur).strip()
+    if not brut:
+        return None
+    cle = _sans_accents(brut).replace(" ", "").replace("-", "").replace("_", "")
+    for canonique, variantes in ALIAS_MODE_PAIEMENT.items():
+        if cle in variantes:
+            return canonique
+    return brut
+
 # Formats de date acceptés à la lecture.
 FORMATS_DATE = [
     "%Y-%m-%d %H:%M:%S",
@@ -402,7 +439,7 @@ def controler_qualite(df):
         # Champ facultatif : mode de paiement (rattaché à la commande à l'intégration).
         mode = None
         if a_mode_paiement and pd.notna(row["mode_paiement"]):
-            mode = str(row["mode_paiement"]).strip() or None
+            mode = normaliser_mode_paiement(row["mode_paiement"])
 
         lignes_valides.append(
             {

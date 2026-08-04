@@ -79,6 +79,14 @@ def _chute_ca(pdv_id, debut, fin):
     if not par_jour:
         return []
 
+    # La journée en cours est incomplète : la comparer à des journées entières
+    # la ferait mécaniquement ressortir en chute, quel que soit le commerce. On
+    # l'écarte plutôt que de produire une alerte structurellement fausse.
+    jour_en_cours = fin.date()
+    par_jour = {j: ca for j, ca in par_jour.items() if j != jour_en_cours}
+    if not par_jour:
+        return []
+
     # Moyenne du CA par jour de semaine (0 = lundi ... 6 = dimanche).
     par_semaine = {}
     for jour, ca in par_jour.items():

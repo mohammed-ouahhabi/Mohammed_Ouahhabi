@@ -149,3 +149,28 @@ def test_upload_affiche_ecran_correspondance(client):
     assert r.status_code == 200
     assert "Correspondance" in html
     assert "date_commande" in html  # la colonne réelle du fichier est proposée
+
+
+# --------------------------------------------------------------------------
+# Normalisation des valeurs de mode de paiement
+#
+# Le dictionnaire d'alias rapproche les *noms de colonnes* ; la normalisation
+# ci-dessous rapproche les *valeurs*. Sans elle, « CB » et « Carte » comptent
+# pour deux moyens de paiement distincts dans l'analyse.
+# --------------------------------------------------------------------------
+def test_les_variantes_de_carte_bancaire_sont_ramenees_a_un_seul_libelle():
+    for variante in ["CB", "cb", "Carte", "carte bancaire", "CARTE-BLEUE", "TPE"]:
+        assert pipeline.normaliser_mode_paiement(variante) == "Carte"
+
+
+def test_les_autres_moyens_de_paiement_sont_normalises_aussi():
+    assert pipeline.normaliser_mode_paiement("especes") == "Espèces"
+    assert pipeline.normaliser_mode_paiement("Espèces") == "Espèces"
+    assert pipeline.normaliser_mode_paiement("ticket restaurant") == "Ticket resto"
+    assert pipeline.normaliser_mode_paiement("TR") == "Ticket resto"
+
+
+def test_une_valeur_inconnue_est_conservee_plutot_que_perdue():
+    assert pipeline.normaliser_mode_paiement("Crypto") == "Crypto"
+    assert pipeline.normaliser_mode_paiement("   ") is None
+    assert pipeline.normaliser_mode_paiement(None) is None

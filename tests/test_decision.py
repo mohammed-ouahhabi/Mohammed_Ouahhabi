@@ -93,3 +93,35 @@ def test_prevision_7_jours_structure(app, db):
     assert len(resultat["valeurs"]) == 7
     # Toutes les estimations sont des nombres positifs ou nuls.
     assert all(v >= 0 for v in resultat["valeurs"])
+
+
+# --------------------------------------------------------------------------
+# La journée en cours est incomplète
+#
+# Comparer une journée tronquée (les données s'arrêtent en milieu d'après-midi)
+# à des journées entières la ferait ressortir en chute quel que soit le
+# commerce. L'alerte serait exacte arithmétiquement, et fausse dans son sens.
+# --------------------------------------------------------------------------
+def test_la_journee_en_cours_ne_declenche_pas_de_chute_de_ca(app, db):
+    pdv = PointDeVente.query.first()
+    p = Produit(nom="PizzaJourEnCours", categorie="Test", prix_unitaire=10)
+    db.session.add(p)
+    db.session.flush()
+
+    maintenant = kpi._maintenant()
+    # Quatre semaines de même jour de semaine, bien fournies.
+    for semaine in range(1, 5):
+        jour = maintenant - timedelta(days=7 * semaine)
+        _ajouter_ventes(pdv.id_point_de_vente, p.id_produit,
+                        jour.replace(hour=12, minute=0, second=0, microsecond=0), 40)
+
+    # Aujourd'hui, journée tronquée : une seule vente pour l'instant.
+    _ajouter_ventes(pdv.id_point_de_vente, p.id_produit,
+                    maintenant.replace(hour=0, minute=5, second=0, microsecond=0), 1)
+
+    resultat = alertes.calculer_alertes(pdv.id_point_de_vente, jours=30)
+    jour_en_cours = maintenant.strftime("%d/%m")
+    chutes = [a for a in resultat if a["type"] == "chute_ca"]
+    assert all(jour_en_cours not in a["titre"] for a in chutes), (
+        "la journée en cours, incomplète par nature, ne doit pas produire d'alerte"
+    )

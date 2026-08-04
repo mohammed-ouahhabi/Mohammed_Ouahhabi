@@ -160,3 +160,37 @@ def test_acces_opportunites_selon_le_role(client, db):
 
     connexion(client, "equipier@test.fr")
     assert client.get("/opportunites").status_code == 403
+
+
+# --------------------------------------------------------------------------
+# Cohérence entre le graphique et la règle qu'il annonce
+#
+# L'en-tête du graphique annonce « CA inférieur à 60 % de la moyenne horaire ».
+# Le détail sous le graphique ne montre que les trois créneaux les plus
+# pénalisants : c'est un choix d'affichage. Le graphique, lui, doit signaler
+# TOUS les créneaux sous le seuil, sans quoi il contredit son propre libellé.
+# --------------------------------------------------------------------------
+
+def test_le_graphique_signale_tous_les_creneaux_sous_le_seuil(app, db):
+    pdv = PointDeVente.query.first()
+    p = _produit("PizzaGraphique")
+    base = kpi._maintenant().replace(minute=0, second=0, microsecond=0) - timedelta(days=3)
+    debut, fin = base, base + timedelta(days=1)
+
+    # Huit heures normales, puis quatre heures creuses : une de plus que les
+    # trois que retient la liste détaillée.
+    for heure in range(11, 19):
+        _vendre(pdv.id_point_de_vente, p.id_produit, base.replace(hour=heure), 20)
+    for heure in range(19, 23):
+        _vendre(pdv.id_point_de_vente, p.id_produit, base.replace(hour=heure), 6)
+
+    creux = opportunites.creneaux_creux(pdv.id_point_de_vente, debut, fin)
+    graphe = opportunites.serie_ca_par_heure(pdv.id_point_de_vente, debut, fin)
+
+    # La liste détaillée reste plafonnée à trois entrées.
+    assert len(creux) == 3
+
+    # Le graphique, lui, applique la règle annoncée, sans plafond.
+    seuil = graphe["seuil"]
+    assert graphe["creux"] == [0 < v < seuil for v in graphe["valeurs"]]
+    assert sum(graphe["creux"]) == 4, "les quatre créneaux sous le seuil sont signalés"
