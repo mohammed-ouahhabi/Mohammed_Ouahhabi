@@ -197,3 +197,19 @@ def test_un_produit_decouvert_a_l_import_a_un_prix_et_une_categorie(app, db):
     assert produit is not None
     assert produit.categorie == pipeline.CATEGORIE_A_QUALIFIER
     assert float(produit.prix_unitaire) == 8.50, "17,00 € pour 2 unités"
+
+
+def test_detecter_colonnes_expose_bien_la_cle_colonnes(app):
+    """Le gabarit de correspondance lit `info.colonnes`.
+
+    Un renommage de cette clé ne casse aucun import en apparence : c'est l'écran
+    de correspondance qui devient vide, à l'étape 2. Ce test verrouille le
+    contrat entre le service et le gabarit.
+    """
+    chemin = _ecrire_csv(
+        "horodatage;libelle_article;nb;total_ttc\n"
+        "2026-06-01 12:00;Reine;1;13.90\n"
+    )
+    info = pipeline.detecter_colonnes(chemin)
+    assert info["colonnes"] == ["horodatage", "libelle_article", "nb", "total_ttc"]
+    assert set(info) == {"colonnes", "auto", "apercu"}
