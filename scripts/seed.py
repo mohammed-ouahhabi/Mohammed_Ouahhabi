@@ -111,15 +111,28 @@ def executer_seed():
 
     # 4. Commandes + lignes sur 75 jours (dont les 30 derniers pour le dashboard)
     prix_par_nom = {nom: prix for nom, _, prix, _ in PRODUITS}
-    aujourdhui = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
-    debut = aujourdhui - timedelta(days=75)
+    # Le jeu s'arrête HIER, jamais sur la journée en cours : une journée tronquée
+    # s'effondrerait sur la courbe d'évolution et fausserait toute comparaison
+    # avec les journées entières qui la précèdent.
+    dernier_jour = (datetime.utcnow().replace(minute=0, second=0, microsecond=0)
+                    - timedelta(days=1))
+    debut = dernier_jour - timedelta(days=74)
+
+    # Anomalies volontaires, pour que les règles de la couche décision aient
+    # quelque chose à détecter. Un jeu parfaitement régulier ne déclencherait
+    # aucune alerte : l'écran serait vide et la fonctionnalité invisible.
+    # Ces anomalies sont documentées dans sample_data/README.md.
+    jour_creux = dernier_jour - timedelta(days=3)      # une journée à demi-régime
+    debut_decrochage = dernier_jour - timedelta(days=12)  # un produit qui décroche
 
     jour = debut
     nb_commandes = 0
-    while jour <= aujourdhui:
+    while jour <= dernier_jour:
         # Week-end un peu plus chargé.
         base = 48 if jour.weekday() >= 4 else 40
         commandes_du_jour = random.randint(base - 6, base + 6)
+        if jour.date() == jour_creux.date():
+            commandes_du_jour = int(commandes_du_jour * 0.45)
         for _ in range(commandes_du_jour):
             heure = _choisir_heure()
             minute = random.randint(0, 59)
@@ -132,6 +145,10 @@ def executer_seed():
             total = 0.0
             for _ in range(random.randint(1, 3)):  # 1 à 3 lignes par commande
                 nom = _choisir_produit()
+                # Décrochage volontaire : sur les douze derniers jours, la
+                # Végétarienne est massivement remplacée par une autre pizza.
+                if nom == "Végétarienne" and jour >= debut_decrochage and random.random() < 0.85:
+                    nom = "Margherita"
                 quantite = random.randint(1, 2)
                 montant = round(prix_par_nom[nom] * quantite, 2)
                 commande.lignes.append(LigneCommande(
@@ -153,7 +170,7 @@ def executer_seed():
         jour += timedelta(days=1)
 
     db.session.commit()
-    print(f"{nb_commandes} commandes générées sur 75 jours.")
+    print(f"{nb_commandes} commandes générées sur 75 jours (jusqu'à hier inclus).")
 
 
 if __name__ == "__main__":

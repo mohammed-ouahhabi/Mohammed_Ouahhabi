@@ -174,3 +174,26 @@ def test_une_valeur_inconnue_est_conservee_plutot_que_perdue():
     assert pipeline.normaliser_mode_paiement("Crypto") == "Crypto"
     assert pipeline.normaliser_mode_paiement("   ") is None
     assert pipeline.normaliser_mode_paiement(None) is None
+
+
+def test_un_produit_decouvert_a_l_import_a_un_prix_et_une_categorie(app, db):
+    """Un produit absent du catalogue est créé, mais jamais à 0,00 € sans mention.
+
+    Le prix est déduit de la ligne qui l'a fait apparaître, et la catégorie
+    indique explicitement qu'un arbitrage reste à faire.
+    """
+    from app.models import Produit, Utilisateur, PointDeVente
+
+    chemin = _ecrire_csv(
+        "date,produit,quantite,montant\n"
+        "2026-06-01 12:00,Salade Grecque,2,17.00\n"
+    )
+    utilisateur = Utilisateur.query.first()
+    pdv = PointDeVente.query.first()
+    pipeline.traiter_fichier(chemin, "decouverte.csv", utilisateur,
+                             pdv.id_point_de_vente)
+
+    produit = Produit.query.filter_by(nom="Salade Grecque").first()
+    assert produit is not None
+    assert produit.categorie == pipeline.CATEGORIE_A_QUALIFIER
+    assert float(produit.prix_unitaire) == 8.50, "17,00 € pour 2 unités"

@@ -477,14 +477,26 @@ def _anomalie_principale(anomalies):
     return libelles[principale]
 
 
-def _resoudre_produits(noms):
+# Catégorie donnée à un produit découvert dans un fichier importé. Elle est
+# explicite plutôt que vide : le responsable voit qu'il reste un arbitrage à
+# faire, là où une case blanche passe inaperçue.
+CATEGORIE_A_QUALIFIER = "À qualifier"
+
+
+def _resoudre_produits(noms, prix_observes=None):
     """Récupère (ou crée) tous les produits en une seule passe.
 
     Résoudre les produits en amont évite une requête par ligne : sur un fichier
     de plusieurs milliers de lignes, la différence est décisive.
     Renvoie un dictionnaire {nom en minuscules: Produit}.
+
+    Un produit inconnu est créé à la volée : c'est la contrepartie d'un import
+    ouvert à n'importe quelle source. Son prix unitaire est déduit de la ligne
+    qui l'a fait apparaître (montant / quantité) plutôt que laissé à zéro, qui
+    afficherait « 0,00 € » au catalogue et laisserait croire à un produit gratuit.
     """
     cache = {}
+    prix_observes = prix_observes or {}
     voulus = {nom.lower(): nom for nom in noms}
     if not voulus:
         return cache
@@ -497,7 +509,11 @@ def _resoudre_produits(noms):
 
     manquants = [nom for cle, nom in voulus.items() if cle not in cache]
     for nom in manquants:
-        produit = Produit(nom=nom, categorie=None, prix_unitaire=0)
+        produit = Produit(
+            nom=nom,
+            categorie=CATEGORIE_A_QUALIFIER,
+            prix_unitaire=round(prix_observes.get(nom.lower(), 0), 2),
+        )
         db.session.add(produit)
         cache[nom.lower()] = produit
     if manquants:
@@ -534,7 +550,16 @@ def integrer(lignes_valides, point_de_vente_id):
         return 0, ignorees
 
     # 3. Résolution de tous les produits en amont (une seule requête).
-    cache_produits = _resoudre_produits({ligne["produit"] for _, ligne in nouvelles})
+    # Prix unitaire observé, pour les produits que le fichier ferait découvrir.
+    prix_observes = {}
+    for _, ligne in nouvelles:
+        quantite = ligne["quantite"] or 0
+        if quantite > 0:
+            prix_observes.setdefault(ligne["produit"].lower(), ligne["montant"] / quantite)
+
+    cache_produits = _resoudre_produits(
+        {ligne["produit"] for _, ligne in nouvelles}, prix_observes
+    )
 
     # 4. Construction des commandes, lignes et ventes.
     # On passe par les relations SQLAlchemy plutôt que par les identifiants :

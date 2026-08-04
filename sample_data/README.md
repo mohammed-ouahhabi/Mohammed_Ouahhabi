@@ -49,3 +49,24 @@ Résultat de l'import :
 > qu'une. C'est une limite assumée de la règle actuelle : elle protège contre la
 > duplication accidentelle, mais ne sait pas distinguer une répétition légitime
 > au sein d'un même ticket.
+
+---
+
+## Anomalies volontaires du jeu de démonstration
+
+Le jeu généré par `scripts/seed.py` n'est pas parfaitement régulier : deux
+anomalies y sont **injectées délibérément**, afin que les règles de la couche
+décision aient quelque chose à détecter. Un jeu lisse ne déclencherait aucune
+alerte, et la fonctionnalité serait invisible à la démonstration.
+
+| Anomalie | Où | Ce qu'elle déclenche |
+|---|---|---|
+| Journée à 45 % du régime normal | 3 jours avant le dernier jour | alerte **Chute de CA** (niveau critique) |
+| Végétarienne remplacée à 85 % par Margherita | 12 derniers jours | alerte **Produit en décrochage** |
+
+Le jeu s'arrête **la veille** du jour d'exécution, jamais sur la journée en
+cours : une journée tronquée s'effondrerait sur la courbe d'évolution et
+fausserait toute comparaison avec les journées entières qui la précèdent.
+
+La graine aléatoire est fixe (`random.seed(42)`) : deux exécutions le même jour
+produisent exactement le même jeu.
