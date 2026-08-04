@@ -45,13 +45,18 @@ de démonstration.
 Depuis le compte Manager → **Import de données** → chargez l'un des fichiers du
 dossier `sample_data/` :
 
-| Fichier                         | Ce qu'il démontre                                                  |
-| ------------------------------- | ------------------------------------------------------------------ |
-| `ventes_demo_juillet.csv`       | Import conforme — 186 lignes intégrées                             |
-| `ventes_sale.csv`               | Contrôles qualité — 25 lues, 14 intégrées, **11 rejetées**         |
-| `ventes_colonnes_exotiques.csv` | Correspondance de colonnes (noms différents, séparateur `;`)       |
+| Fichier                         | Ce qu'il démontre                                                |
+| ------------------------------- | ---------------------------------------------------------------- |
+| `ventes_demo_juillet.csv`       | Import conforme — 186 lues, 186 intégrées, 0 rejetée             |
+| `ventes_sale.csv`               | Contrôles qualité — 25 lues, 14 intégrées, **11 rejetées**       |
+| `ventes_colonnes_exotiques.csv` | Correspondance de colonnes (noms différents, séparateur `;`)     |
 | `ventes_dominos_T1_2026.csv`    | Volume réel — 12 234 lignes, 5 370 commandes (≈ 5 s de traitement) |
-| _le même fichier deux fois_     | **Idempotence** — 0 intégrées, N ignorées, indicateurs inchangés   |
+| _le même fichier deux fois_     | **Idempotence** — 0 intégrée, N ignorées, indicateurs inchangés  |
+
+> L'ordre compte : chargez les fichiers dans l'ordre du tableau, puis rechargez
+> le premier pour observer l'idempotence. Les captures de `docs/captures/` ont
+> été produites exactement dans cette séquence, et les chiffres correspondants
+> sont consignés dans `docs/fiche_de_verite.md`.
 
 ---
 
@@ -72,7 +77,7 @@ dossier `sample_data/` :
 
 ---
 
-## 2 bis. Contenu de l'archive livrée
+## 3. Contenu de l'archive livrée
 
 | Élément                           | Description                                                                     |
 | --------------------------------- | ------------------------------------------------------------------------------- |
@@ -80,9 +85,9 @@ dossier `sample_data/` :
 | `app/`                            | Code source de l'application (modèles, services, blueprints, templates, CSS/JS) |
 | `migrations/`                     | Migrations de schéma (Flask-Migrate / Alembic)                                  |
 | `scripts/`                        | Jeu de démonstration, amorçage au déploiement, export SQL                       |
-| `tests/`                          | 66 tests automatisés (pytest)                                                   |
+| `tests/`                          | 72 tests automatisés (pytest)                                                   |
 | `sample_data/`                    | Fichiers CSV pour démontrer le pipeline                                         |
-| `docs/`                           | Rédactionnel technique + `captures/` : 6 captures d'exécution                   |
+| `docs/`                           | Rédactionnel technique, `fiche_de_verite.md` + `captures/` : 8 captures d'exécution |
 | **`dump.sql`**                    | **Export SQL complet de la base** (schéma + données de démonstration)           |
 | `requirements.txt`, `runtime.txt` | Dépendances et version de Python                                                |
 | `render.yaml`, `Procfile`         | Configuration de déploiement (Render, gunicorn)                                 |
@@ -91,19 +96,73 @@ dossier `sample_data/` :
 
 ---
 
-## 3. Structure du projet
+## 4. Les six écrans
+
+| # | Écran                              | Ce qu'il apporte                                                             | Accès                               |
+| - | ---------------------------------- | ---------------------------------------------------------------------------- | ----------------------------------- |
+| 1 | **Tableau de bord**                | 4 indicateurs, alertes en tête de page, évolution du CA, top produits, pics d'activité | tous les rôles                      |
+| 2 | **Analyse des ventes**             | ventes par période, détail par produit, prévision d'affluence, modes de paiement, export CSV | manager, assistant, premier équipier |
+| 3 | **Produits**                       | catalogue des produits vendus                                                | manager, assistant, premier équipier |
+| 4 | **Opportunités promotionnelles**   | créneaux en retrait, produits en retrait, associations de produits           | manager, assistant, premier équipier |
+| 5 | **Administration**                 | gestion des utilisateurs et des sources, réinitialisation du jeu de démonstration | manager, assistant                  |
+| 6 | **Import de données**              | pipeline d'import et son suivi                                               | manager, assistant                  |
+
+Les écrans 1, 2 et 4 forment une progression volontaire : le tableau de bord dit
+**ce qui s'est passé**, les alertes **ce qui mérite attention**, les opportunités
+**ce qu'on peut décider**.
+
+---
+
+## 5. Modèle de données
+
+Huit tables : **sept tables métier**, plus une table technique.
+
+| Table              | Rôle                                                                     |
+| ------------------ | ------------------------------------------------------------------------ |
+| `point_de_vente`   | le magasin piloté                                                        |
+| `utilisateur`      | comptes, rôle et empreinte du mot de passe                               |
+| `produit`          | catalogue                                                                |
+| `commande`         | un ticket                                                                |
+| `ligne_commande`   | une ligne de ticket — **seule source du chiffre d'affaires**             |
+| `vente`            | l'encaissement associé (export Pulse), porte le mode de paiement         |
+| `import_fichier`   | journal des imports : lignes lues, intégrées, ignorées, rejetées         |
+| `import_temporaire`| _(technique)_ dépôt du fichier entre les deux étapes de l'import         |
+
+> **L'invariant du modèle :** le chiffre d'affaires est calculé **exclusivement**
+> à partir de `ligne_commande`. La table `vente` sert à l'analyse des
+> encaissements ; elle n'intervient jamais dans le calcul du CA, ce qui interdit
+> tout double comptage.
+
+`import_temporaire` existe parce que le système de fichiers d'un hébergement en
+conteneur est éphémère : conserver le fichier sur disque entre l'étape de
+correspondance et l'étape de traitement exposait à un « fichier introuvable »
+après une mise en veille.
+
+---
+
+## 6. Structure du projet
 
 ```
 .
 ├── app/
-│   ├── __init__.py          # Application factory
-│   ├── models.py            # Modèles de données (7 tables)
-│   ├── blueprints/          # Modules : auth, dashboard, ventes, admin, imports, legal
-│   ├── services/            # Logique métier : kpi, pipeline, alertes, prevision, opportunites
-│   └── templates/           # Gabarits Jinja2 (6 écrans + partials)
-├── migrations/              # Migrations de base (Flask-Migrate)
-├── scripts/                 # seed.py (données de démo), bootstrap.py, generer_dump.sh
-├── tests/                   # Suite de tests pytest (66 tests)
+│   ├── __init__.py          # Application factory + commandes CLI
+│   ├── models.py            # Modèles de données (8 tables)
+│   ├── decorators.py        # Contrôle d'accès par rôle
+│   ├── forms.py             # Formulaires Flask-WTF (protection CSRF)
+│   ├── blueprints/          # auth, dashboard, ventes, admin, imports, legal
+│   ├── services/            # kpi, pipeline, alertes, prevision, opportunites
+│   ├── static/              # CSS, JS, Chart.js servi en local (aucun CDN)
+│   └── templates/           # Gabarits Jinja2 (6 écrans + partials + pages d'erreur)
+├── migrations/              # Migrations de schéma (Flask-Migrate / Alembic)
+├── scripts/
+│   ├── seed.py              # Jeu de démonstration
+│   ├── bootstrap.py         # Amorçage au déploiement (base vide uniquement)
+│   ├── diagnostic.py        # Quelle base, quelle révision, quel schéma
+│   ├── reinit_db.py         # Réinitialisation locale (développement uniquement)
+│   └── generer_dump.sh      # Export SQL
+├── tests/                   # Suite de tests pytest (72 tests, 10 fichiers)
+├── sample_data/             # Jeux de données de démonstration + leur README
+├── docs/                    # Rédactionnel, fiche de vérité, 8 captures d'exécution
 ├── render.yaml              # Configuration de déploiement (infrastructure as code)
 ├── Procfile                 # Commande de démarrage
 ├── runtime.txt              # Version de Python (3.12.5)
@@ -114,7 +173,7 @@ dossier `sample_data/` :
 
 ---
 
-## 4. Installation et lancement en local
+## 7. Installation et lancement en local
 
 ### Prérequis
 
@@ -180,18 +239,19 @@ rattraper son retard sans échouer sur un « table already exists ».
 
 ---
 
-## 5. Comptes de démonstration
+## 8. Comptes de démonstration
 
 Ces comptes sont créés automatiquement par le chargement des données de démonstration (`python -m scripts.seed`).
 
 **Mot de passe commun :** `motdepasse123`
 
-| E-mail                 | Rôle              | Accès                                             |
-| ---------------------- | ----------------- | ------------------------------------------------- |
-| manager@pdv-chatou.fr  | Manager           | Complet (dashboard, analyse, back-office, import) |
-| adjoint@pdv-chatou.fr  | Assistant manager | Complet                                           |
-| premier@pdv-chatou.fr  | Premier équipier  | Dashboard + analyse (lecture)                     |
-| equipier@pdv-chatou.fr | Équipier          | Dashboard (lecture)                               |
+| E-mail                    | Rôle              | Accès                                             |
+| ------------------------- | ----------------- | ------------------------------------------------- |
+| manager@pdv-chatou.fr     | Manager           | Complet (dashboard, analyse, back-office, import) |
+| responsable@pdv-chatou.fr | Manager           | Complet                                           |
+| adjoint@pdv-chatou.fr     | Assistant manager | Complet                                           |
+| premier@pdv-chatou.fr     | Premier équipier  | Dashboard + analyse (lecture)                     |
+| equipier@pdv-chatou.fr    | Équipier          | Dashboard (lecture)                               |
 
 ### Créer un compte administrateur (Manager) manuellement
 
@@ -200,11 +260,17 @@ flask creer-admin --email vous@example.com --nom "Votre Nom"
 
 ```
 
+Le mot de passe est demandé de façon interactive, avec confirmation : il n'est
+jamais passé sur la ligne de commande, où il resterait dans l'historique du
+terminal.
+
 ---
 
-## 6. Tests
+## 9. Tests
 
-La suite de tests (66 tests) couvre les indicateurs, le pipeline d'import, les accès par rôle, l'administration et la couche décision.
+La suite compte **72 tests** répartis en 10 fichiers. Elle couvre les indicateurs,
+le pipeline d'import, la recomposition de l'horodatage, l'idempotence, les accès
+par rôle, l'administration, la table `vente` et la couche décision.
 
 ```bash
 pytest
@@ -212,18 +278,65 @@ pytest
 
 ---
 
-## 7. Import de données (pipeline)
+## 10. Import de données (pipeline)
 
-L'écran « Import de données » (réservé au manager et à l'assistant) permet de charger un fichier CSV de ventes. Le pipeline exécute, de façon visible, une série de contrôles qualité (doublons, valeurs manquantes, formats de date, quantités et montants invalides) avant d'intégrer les seules lignes valides.
+L'écran « Import de données » (réservé au manager et à l'assistant) charge un
+fichier CSV de ventes en **deux étapes** : lecture des en-têtes et confirmation
+de la correspondance, puis contrôles qualité et intégration.
 
-- **Format attendu :** fichier CSV avec les colonnes date, produit, quantité, montant.
-- **Colonnes non reconnues :** si les intitulés diffèrent, un écran de correspondance permet d'associer manuellement les colonnes.
+### Le principe : source libre, cible stable
 
-Des jeux de données de test sont fournis pour illustrer les trois cas (fichier propre, fichier avec erreurs, fichier aux colonnes non standard).
+Les colonnes du fichier source peuvent porter **n'importe quel nom**. Un
+dictionnaire d'alias les rapproche automatiquement du schéma cible, et un écran
+de correspondance permet d'associer à la main celles qui n'ont pas été
+reconnues. C'est cette couche qui rend la solution déployable sur un parc de
+magasins équipés de logiciels de caisse différents, sans redéveloppement.
+
+| Champ cible                     | Statut       |
+| ------------------------------- | ------------ |
+| date, produit, quantité, montant | obligatoires |
+| heure, mode de paiement          | facultatifs  |
+
+### Ce que le pipeline sait faire
+
+- **Détection automatique du séparateur** (`,` ou `;`) et de l'encodage.
+- **Plusieurs formats de date** acceptés (`AAAA-MM-JJ`, `JJ/MM/AAAA`, avec ou
+  sans heure).
+- **Recomposition de l'horodatage** lorsque la date et l'heure figurent dans
+  **deux colonnes distinctes** — cas fréquent des exports de caisse.
+- **Normalisation des valeurs de mode de paiement** : « CB », « carte
+  bancaire », « TPE » sont ramenés à un libellé unique. Sans cela, le même moyen
+  de paiement apparaîtrait plusieurs fois dans l'analyse. Une valeur inconnue est
+  conservée telle quelle plutôt que perdue.
+- **Contrôles qualité** rejetant une ligne : valeur manquante, doublon interne,
+  format de date invalide, quantité ou montant invalide. **Chaque rejet est
+  motivé et affiché** — jamais silencieux.
+- **Produits inconnus créés à la volée**, avec un prix déduit de la ligne qui les
+  a fait apparaître et la catégorie « À qualifier », qui signale l'arbitrage
+  restant.
+
+### L'idempotence : un import rejouable
+
+Deux garde-fous, complémentaires :
+
+1. **Au niveau du fichier** — son empreinte SHA-256 est enregistrée. Un fichier
+   déjà traité est reconnu et l'import est **bloqué par défaut** ; l'utilisateur
+   peut passer outre en connaissance de cause.
+2. **Au niveau de la ligne** — chaque ligne porte une clé déterministe
+   (date + produit normalisé + quantité + montant) sous contrainte d'unicité.
+   Une ligne déjà présente n'est **jamais réinsérée**, même si elle provient d'un
+   autre fichier.
+
+Conséquence : recharger un export déjà intégré affiche **0 ligne intégrée, N
+ignorées**, et les indicateurs restent strictement inchangés. C'est la
+différence entre un pipeline de démonstration et un pipeline exploitable.
+
+Les jeux de données de `sample_data/` illustrent chacun de ces cas ; leur
+contenu est décrit dans `sample_data/README.md`.
 
 ---
 
-## 8. Déploiement
+## 11. Déploiement
 
 Le déploiement est décrit dans le fichier `render.yaml` (infrastructure as code). Sur Render, la création d'un « Blueprint » à partir de ce fichier crée automatiquement :
 
@@ -242,13 +355,13 @@ Le fichier `dump.sql` permet de reconstituer la base de données à l'identique.
 
 ---
 
-## 9. Compatibilité
+## 12. Compatibilité
 
 Application web responsive, compatible avec les navigateurs récents (Chrome, Firefox, Edge, Safari, Brave), sur ordinateur et smartphone. Connexion sécurisée en HTTPS une fois déployée.
 
 ---
 
-## 10. Sécurité et conformité
+## 13. Sécurité et conformité
 
 - Mots de passe hachés (jamais stockés en clair).
 - Gestion des rôles et protection des accès par décorateurs.
