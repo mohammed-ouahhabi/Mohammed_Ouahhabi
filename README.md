@@ -23,8 +23,8 @@ Auteur : Mohammed OUAHHABI
 
 Mot de passe commun : **`motdepasse123`**
 
-| Rôle                              | E-mail                        | Tableau de bord | Analyse | **Back-office** |
-| --------------------------------- | ----------------------------- | :-------------: | :-----: | :-------------: |
+| Rôle                              | E-mail                      | Tableau de bord | Analyse | **Back-office** |
+| --------------------------------- | --------------------------- | :-------------: | :-----: | :-------------: |
 | **Manager** (accès admin complet) | **`manager@pdv-chatou.fr`** |       ✅        |   ✅    |       ✅        |
 | Assistant manager                 | `adjoint@pdv-chatou.fr`     |       ✅        |   ✅    |       ✅        |
 | Premier équipier                  | `premier@pdv-chatou.fr`     |       ✅        |   ✅    |       ❌        |
@@ -45,13 +45,13 @@ de démonstration.
 Depuis le compte Manager → **Import de données** → chargez l'un des fichiers du
 dossier `sample_data/` :
 
-| Fichier                         | Ce qu'il démontre                                                |
-| ------------------------------- | ---------------------------------------------------------------- |
-| `ventes_demo_juillet.csv`       | Import conforme — 186 lignes intégrées                           |
-| `ventes_sale.csv`               | Contrôles qualité — 25 lues, 14 intégrées, **11 rejetées**       |
-| `ventes_colonnes_exotiques.csv` | Correspondance de colonnes (noms différents, séparateur `;`)     |
+| Fichier                         | Ce qu'il démontre                                                  |
+| ------------------------------- | ------------------------------------------------------------------ |
+| `ventes_demo_juillet.csv`       | Import conforme — 186 lignes intégrées                             |
+| `ventes_sale.csv`               | Contrôles qualité — 25 lues, 14 intégrées, **11 rejetées**         |
+| `ventes_colonnes_exotiques.csv` | Correspondance de colonnes (noms différents, séparateur `;`)       |
 | `ventes_dominos_T1_2026.csv`    | Volume réel — 12 234 lignes, 5 370 commandes (≈ 5 s de traitement) |
-| _le même fichier deux fois_     | **Idempotence** — 0 intégrées, N ignorées, indicateurs inchangés |
+| _le même fichier deux fois_     | **Idempotence** — 0 intégrées, N ignorées, indicateurs inchangés   |
 
 ---
 
@@ -197,6 +197,7 @@ Ces comptes sont créés automatiquement par le chargement des données de démo
 
 ```bash
 flask creer-admin --email vous@example.com --nom "Votre Nom"
+
 ```
 
 ---
