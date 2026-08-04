@@ -27,4 +27,6 @@ app/static/uploads/*
 .history/
 
 # Archive de livraison (artefact généré)
-pilotage_pdv_livrable.zip
+# Archive de rendu : produit de construction, régénérable par
+# scripts/generer_zip.sh — on ne versionne pas un binaire de 3 Mo.
+*.zip

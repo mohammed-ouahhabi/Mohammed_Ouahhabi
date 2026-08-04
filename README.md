@@ -177,8 +177,10 @@ après une mise en veille.
 
 ### Prérequis
 
-- Python 3.12
-- Git
+- **Python 3.12** (version exacte utilisée : 3.12.5, cf. `runtime.txt`)
+- **Git** — uniquement pour cloner le dépôt. Si vous partez de l'archive ZIP,
+  Git n'est pas nécessaire : décompressez et passez à l'étape 2.
+- Aucun serveur de base de données à installer : SQLite est intégré à Python.
 
 ### Étapes
 
@@ -186,6 +188,7 @@ après une mise en veille.
 # 1. Récupérer le projet
 git clone <url-du-depot>
 cd <dossier-du-projet>
+# (depuis l'archive ZIP : décompressez, puis placez-vous dans le dossier obtenu)
 
 # 2. Créer et activer un environnement virtuel
 python -m venv venv
@@ -210,6 +213,42 @@ flask run
 ```
 
 L'application est alors accessible à l'adresse : http://127.0.0.1:5000
+
+### Accès à la base de données
+
+| | Développement | Production |
+| --- | --- | --- |
+| Moteur | **SQLite** | **PostgreSQL** |
+| Emplacement | fichier local **`instance/pilotage.db`**, créé par `flask db upgrade` | base managée fournie par l'hébergeur |
+| Identifiants | **aucun** — SQLite est un fichier, il n'y a ni utilisateur ni mot de passe | injectés par la variable d'environnement **`DATABASE_URL`** |
+| Configuration | rien à faire : c'est le comportement par défaut | `DATABASE_URL` est renseignée automatiquement par Render (cf. `render.yaml`) |
+
+La bascule d'un moteur à l'autre est **automatique** et ne demande aucune
+modification du code : si `DATABASE_URL` est définie, elle est utilisée ; sinon,
+l'application retombe sur SQLite.
+
+> 🔒 **Aucun identifiant de production ne figure dans ce dépôt.** La chaîne de
+> connexion PostgreSQL et la clé secrète des sessions sont des variables
+> d'environnement, gérées par l'hébergeur. Le fichier `.env.example` est un
+> **modèle** : il ne contient que des valeurs de remplacement. Le fichier `.env`
+> réel n'est jamais versionné ni livré.
+
+Pour inspecter la base de développement directement :
+
+```bash
+# Diagnostic intégré : quelle base, quelle révision, quel schéma
+python -m scripts.diagnostic
+
+# Ou avec n'importe quel client SQLite
+sqlite3 instance/pilotage.db ".tables"
+```
+
+Le fichier **`dump.sql`** livré à la racine permet de reconstituer la base à
+l'identique (schéma complet + jeu de démonstration), sans exécuter l'application :
+
+```bash
+sqlite3 nouvelle_base.db < dump.sql
+```
 
 > ⚠️ **Après chaque récupération de code (`git pull`)**, relancez
 > `flask db upgrade` avant de démarrer l'application. Si le schéma de la base a
@@ -355,9 +394,28 @@ Le fichier `dump.sql` permet de reconstituer la base de données à l'identique.
 
 ---
 
-## 12. Compatibilité
+## 12. Compatibilité multi-navigateur
 
-Application web responsive, compatible avec les navigateurs récents (Chrome, Firefox, Edge, Safari, Brave), sur ordinateur et smartphone. Connexion sécurisée en HTTPS une fois déployée.
+L'application est **testée et fonctionnelle** sur les navigateurs récents,
+sur ordinateur comme sur smartphone :
+
+| Navigateur | Ordinateur | Mobile |
+| ---------- | :--------: | :----: |
+| Chrome     | ✅ | ✅ |
+| Firefox    | ✅ | ✅ |
+| Edge       | ✅ | — |
+| Safari     | ✅ | ✅ |
+| Brave      | ✅ | ✅ |
+
+Cette compatibilité n'est pas fortuite : l'interface est rendue **côté serveur**
+en HTML/CSS standard, sans framework front-end ni fonctionnalité expérimentale.
+Le seul script tiers est **Chart.js**, servi depuis le dossier `static/` du
+projet et **non depuis un CDN** — l'application reste donc affichable même si
+un réseau filtre les domaines externes.
+
+La mise en page est **responsive** (grilles flexibles, unités relatives) : la
+barre latérale se replie et les tableaux défilent horizontalement sur petit
+écran. La connexion est chiffrée en **HTTPS** une fois déployée.
 
 ---
 

@@ -1,27 +1,54 @@
-# Jeux de données d'exemple
+# Jeux de données de démonstration
 
-`ventes_exemple.csv` sert à démontrer le pipeline d'import.
+Ces fichiers servent à rejouer, à l'identique, les scénarios d'import décrits
+dans le dossier. Ils sont à charger depuis **Import de données** (compte Manager
+ou Assistant), dans l'ordre du tableau : les trois premiers illustrent chacun un
+cas, le quatrième démontre l'idempotence.
 
-Il contient volontairement **4 lignes à problème** pour illustrer les contrôles
-qualité affichés à l'écran :
-
-| Ligne | Anomalie détectée        |
-|-------|--------------------------|
-| `01/13/2026,Reine,...`            | format de date invalide (mois 13) |
-| `2026-06-07 19:00,,1,13.90`       | valeur manquante (produit vide)   |
-| `2026-06-08 20:30,Pepperoni,-2,…` | quantité invalide (négative)      |
-| `2026-06-09 12:40,Calzone,1,abc`  | montant non numérique             |
-
-Les 13 lignes valides sont intégrées, les 4 autres rejetées — le récapitulatif
-affiche « 4 lignes rejetées ».
+| # | Fichier | Ce qu'il démontre | Résultat attendu |
+|---|---|---|---|
+| 1 | `ventes_demo_juillet.csv` | Un import conforme. Colonnes standard, séparateur `,`, une colonne `mode_paiement` facultative reconnue automatiquement. | **186 lues · 186 intégrées · 0 rejetée** |
+| 2 | `ventes_sale.csv` | Les contrôles qualité. Le fichier porte volontairement cinq familles d'anomalies. Aucun rejet n'est silencieux : chacun est motivé à l'écran. | **25 lues · 14 intégrées · 11 rejetées** |
+| 3 | `ventes_colonnes_exotiques.csv` | Le découplage source / cible. Séparateur `;`, intitulés non standard : `horodatage`, `libelle_article`, `nb`, `total_ttc`, `reglement`. | **20 lues · 20 intégrées · 0 rejetée** |
+| 4 | `ventes_demo_juillet.csv` *(à nouveau)* | **L'idempotence.** L'empreinte du fichier est reconnue, l'import est bloqué ; en forçant, aucune ligne n'est réinsérée. | **186 lues · 0 intégrée · 186 ignorées** — indicateurs inchangés |
 
 ---
 
-`ventes_magasin_lyon.csv` démontre la **compatibilité multi-magasins** : ses
-colonnes portent des noms différents (`date_commande`, `article`, `qte`, `prix`)
-et sont séparées par `;`. L'écran de correspondance les **auto-détecte** et les
-associe au schéma cible — aucun redéveloppement nécessaire pour une nouvelle
-source.
+## 1. Le fichier conforme — `ventes_demo_juillet.csv`
+
+186 lignes de ventes du 1er au 14 juillet 2026, colonnes
+`date, produit, quantite, montant, mode_paiement`.
+
+Les valeurs de `mode_paiement` y sont écrites **« CB »**, là où le jeu de
+démonstration écrit « Carte ». La normalisation des valeurs les ramène à un
+libellé unique : sans elle, le même moyen de paiement apparaîtrait deux fois
+dans le graphique de répartition.
+
+## 2. Le fichier dégradé — `ventes_sale.csv`
+
+Un fichier tel qu'on en reçoit réellement : 25 lignes, dont 11 inexploitables.
+
+| Anomalie | Occurrences |
+|---|---:|
+| Valeur manquante | 3 |
+| Doublon interne | 1 |
+| Format de date invalide *(dont la mention littérale « hier »)* | 3 |
+| Quantité invalide | 2 |
+| Montant invalide | 2 |
+| **Total rejeté** | **11** |
+
+Ce fichier ne porte **pas** de colonne de mode de paiement : c'est le cas normal
+d'un champ facultatif absent, qui ne déclenche aucune erreur.
+
+## 3. Les colonnes non standard — `ventes_colonnes_exotiques.csv`
+
+Le même magasin, un autre logiciel de caisse. `horodatage` et `nb` sont
+reconnus automatiquement par le dictionnaire d'alias ; `libelle_article` et
+`total_ttc` doivent être associés **à la main** sur l'écran de correspondance.
+
+Ce fichier fait apparaître un produit absent du catalogue, **Salade César** :
+il est créé à la volée, avec un prix déduit de la ligne (montant ÷ quantité) et
+la catégorie « À qualifier », qui signale l'arbitrage restant.
 
 ---
 
