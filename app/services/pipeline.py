@@ -248,7 +248,7 @@ def detecter_colonnes(chemin):
         auto[champ] = trouve
 
     apercu = df.head(3).fillna("").astype(str).to_dict(orient="records")
-    return {"colonnes": colonnes, "auto": auto, "apercu": apercu}
+    return {"colones": colonnes, "auto": auto, "apercu": apercu}
 
 
 def mapping_complet(mapping):
